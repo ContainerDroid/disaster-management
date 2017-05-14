@@ -26,6 +26,9 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity implements LocationListener{
 
@@ -64,7 +67,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private static final String[] PERMS={
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.INTERNET
+            Manifest.permission.INTERNET,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
 
@@ -117,6 +121,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
                     mServiceBound = true;
 
+                    try {
+                        Runtime.getRuntime().exec(new String[]{"logcat", "-c"});
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     startLocationRequests();
                 } else {
                     Log.d(TAG, "stopped SensorService");
@@ -128,6 +137,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     stopService(intent);
 
                     stopLocationRequests();
+                    String filePath = null;
+                    try {
+                        filePath = SamplingData.createLogFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(getApplicationContext(), "Saved in " + filePath, Toast.LENGTH_LONG).show();
                 }
 
             }
