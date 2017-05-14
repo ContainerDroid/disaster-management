@@ -26,9 +26,8 @@ import android.util.Log;
 public class SensorService extends Service implements SensorEventListener {
     private final String TAG = "DataGenerator";
 
-    private float linear_acceleration[] =  new float[3];
-    private float gravity[] = new float[3];
-    private final float alpha = 0.5f;
+    private float gravityValues[] = null;
+    private float magneticValues[] = null;
 
     private IBinder binder = new MyBinder();
     private SensorManager sensorManager;
@@ -44,6 +43,14 @@ public class SensorService extends Service implements SensorEventListener {
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
                 SensorManager.SENSOR_DELAY_NORMAL);
+
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                sensorManager.SENSOR_DELAY_NORMAL);
+
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY),
+                sensorManager.SENSOR_DELAY_NORMAL);
 
         return START_STICKY;
     }
@@ -69,19 +76,42 @@ public class SensorService extends Service implements SensorEventListener {
     }
 
     @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
-        Intent intent = new Intent();
-        String update;
+    public void onSensorChanged(SensorEvent event) {
+        if ((gravityValues != null) && (magneticValues != null)
+                && (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)) {
 
-        gravity[0] = alpha * gravity[0] + (1 - alpha) * sensorEvent.values[0];
-        gravity[1] = alpha * gravity[1] + (1 - alpha) * sensorEvent.values[1];
-        gravity[2] = alpha * gravity[2] + (1 - alpha) * sensorEvent.values[2];
+            float[] deviceRelativeAcceleration = new float[4];
+            deviceRelativeAcceleration[0] = event.values[0] - gravityValues[0];
+            deviceRelativeAcceleration[1] = event.values[1] - gravityValues[1];
+            deviceRelativeAcceleration[2] = event.values[2] - gravityValues[2];
+            deviceRelativeAcceleration[3] = 0;
 
-        linear_acceleration[0] = sensorEvent.values[0] - gravity[0];
-        linear_acceleration[1] = sensorEvent.values[1] - gravity[1];
-        linear_acceleration[2] = sensorEvent.values[2] - gravity[2];
+            // Change the device relative acceleration values to earth relative values
+            // X axis -> East
+            // Y axis -> North Pole
+            // Z axis -> Sky
 
-        SamplingData.setLinear_acceleration(linear_acceleration);
+            float[] R = new float[16], I = new float[16], earthAcc = new float[16];
+
+            SensorManager.getRotationMatrix(R, I, gravityValues, magneticValues);
+
+            float[] inv = new float[16];
+
+            android.opengl.Matrix.invertM(inv, 0, R, 0);
+            android.opengl.Matrix.multiplyMV(earthAcc, 0, inv, 0, deviceRelativeAcceleration, 0);
+
+            float[] deviceAcc = new float[3];
+            deviceAcc[0] = earthAcc[0];
+            deviceAcc[1] = earthAcc[1];
+            deviceAcc[2] = earthAcc[2];
+            SamplingData.setLinear_acceleration(deviceAcc);
+
+        } else if (event.sensor.getType() == Sensor.TYPE_GRAVITY) {
+            gravityValues = event.values;
+        } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+            magneticValues = event.values;
+        }
+
     }
 
     @Override

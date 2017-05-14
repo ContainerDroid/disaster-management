@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -22,11 +24,14 @@ public class SamplingData {
 
     static void logSample() {
         if (location != null) {
-            String update = Float.toString(linear_acceleration[0]) + " " +
-                    Float.toString(linear_acceleration[1]) + " " +
-                    Float.toString(linear_acceleration[2]) + " " +
-                    location.getLatitude() + " " +
-                    location.getLongitude();
+            DecimalFormat df = new DecimalFormat("#.#####");
+            df.setRoundingMode(RoundingMode.CEILING);
+            String update = String.format("%10s %10s %10s %10s %10s\n",
+                    df.format(linear_acceleration[0]),
+                    df.format(linear_acceleration[1]),
+                    df.format(linear_acceleration[2]),
+                    df.format(location.getLatitude()),
+                    df.format(location.getLongitude()));
             Log.d(TAG, update);
             log.append(update + "\n");
         }
