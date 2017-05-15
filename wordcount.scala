@@ -1,3 +1,5 @@
+/* vim: set expandtab: */
+/* vim: set tabstop=3 shiftwidth=3: */
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark._
