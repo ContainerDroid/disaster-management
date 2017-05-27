@@ -1,0 +1,19 @@
+Host spark-fw
+	RemoteForward 6970 localhost:6970
+	HostName skbuf.go.ro
+	Port 3929
+	User tigrisor
+	ForwardX11 yes
+	Compression yes
+	TCPKeepAlive yes
+	ServerAliveInterval 60
+Host ssh-fw
+	RemoteForward 6969 localhost:22
+	HostName skbuf.go.ro
+	Port 3929
+	User tigrisor
+	ForwardX11 yes
+	Compression yes
+	TCPKeepAlive yes
+	ServerAliveInterval 60
+
