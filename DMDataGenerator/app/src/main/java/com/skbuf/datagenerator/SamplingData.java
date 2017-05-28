@@ -22,11 +22,40 @@ public class SamplingData {
     private static TextView log;
     private static File logDir;
 
+    private static Integer serverPort;
+    private static String serverAddress;
+    private static String clientName;
+
+    static public Integer getServerPort(int i) {
+        return serverPort;
+    }
+
+    static public void setServerPort(Integer serverPortP) {
+        serverPort = serverPortP;
+    }
+
+    static public String getClientName() {
+        return clientName;
+    }
+
+    static public void setClientName(String clientNameP) {
+        clientName = clientNameP;
+    }
+
+    static public String getServerAddress() {
+        return serverAddress;
+    }
+
+    static public void setServerAddress(String serverAddressP) {
+        serverAddress = serverAddressP;
+    }
+
     static void logSample() {
         if (location != null) {
             DecimalFormat df = new DecimalFormat("#.#####");
             df.setRoundingMode(RoundingMode.CEILING);
-            String update = String.format("%10s %10s %10s %10s %10s\n",
+            String update = String.format("%10s %10s %10s %10s %10s %10s\n",
+                    clientName,
                     df.format(linear_acceleration[0]),
                     df.format(linear_acceleration[1]),
                     df.format(linear_acceleration[2]),
@@ -67,7 +96,7 @@ public class SamplingData {
             Calendar c = Calendar.getInstance();
             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String formattedDate = df.format(c.getTime());
-            String filePath = Environment.getExternalStorageDirectory() + "/DMDataGenerator-Samples/sample-" + formattedDate;
+            String filePath = Environment.getExternalStorageDirectory() + "/DMDataGenerator-Samples/sample-" + formattedDate + "-" + clientName;
             Runtime.getRuntime().exec(new String[]{"logcat", "-f", filePath, "DataGenerator-Sample:V", "*:S"});
 
             return filePath;
@@ -75,4 +104,6 @@ public class SamplingData {
 
         return new String("Could not save log file!");
     }
+
+
 }

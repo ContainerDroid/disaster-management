@@ -1,7 +1,6 @@
 package com.skbuf.datagenerator;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -21,8 +19,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -30,7 +26,7 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity implements LocationListener{
+public class SecondActivity extends AppCompatActivity implements LocationListener{
 
     final static String TAG = "DataGenerator";
 
@@ -103,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_second);
 
         textViewLogcat = (TextView) findViewById(R.id.logcat);
         textViewLogcat.setMovementMethod(new ScrollingMovementMethod());
@@ -155,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     protected void onResume()
     {
         super.onResume();
-        LocalBroadcastManager.getInstance(MainActivity.this).registerReceiver(broadcastReceiver, new IntentFilter("NOW"));
+        LocalBroadcastManager.getInstance(SecondActivity.this).registerReceiver(broadcastReceiver, new IntentFilter("NOW"));
     }
 
     @Override
