@@ -1,4 +1,6 @@
 <resources>
+    <string name="google_api_key">AIzaSyBw-gayD_Y9Eiq58-0OEJ0QN0bZqujQ2OE</string>
+
     <string name="app_name">DataGenerator</string>
     <string name="button_start_text">Start Sampling</string>
     <string name="button_stop_text">Stop Sampling</string>
@@ -17,4 +19,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
+    <string name="button_generate_start">START</string>
+    <string name="button_generate_safe">SAFE</string>
 </resources>

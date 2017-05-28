@@ -133,7 +133,6 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
 
         textViewLogcat = (TextView) findViewById(R.id.logcat);
         textViewLogcat.setMovementMethod(new ScrollingMovementMethod());
-        SamplingData.setTextView(textViewLogcat);
 
         switchActive = (Switch) findViewById(R.id.activeSwitch);
         switchActive.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {

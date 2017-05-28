@@ -1,28 +1,22 @@
 package com.skbuf.datagenerator;
 
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.RoundingMode;
-import java.net.Socket;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 
 public class SamplingData {
     private static final String TAG = "DataGenerator-Sample";
     private static Location location = null;
     private static float linear_acceleration[] = new float[3];
-    private static TextView log;
     private static File logDir;
 
+    /* data from login page */
     private static Integer serverPort;
     private static String serverAddress;
     private static String clientName;
@@ -65,20 +59,20 @@ public class SamplingData {
         if (location != null) {
             DecimalFormat df = new DecimalFormat("#.#####");
             df.setRoundingMode(RoundingMode.CEILING);
-            String update = String.format("%10s %10s %10s %10s %10s %10s\n",
+            String update = String.format("%10s %10s %10s\n",
                     clientName,
-                    df.format(linear_acceleration[0]),
-                    df.format(linear_acceleration[1]),
-                    df.format(linear_acceleration[2]),
+                    //f.format(linear_acceleration[0]),
+                    //df.format(linear_acceleration[1]),
+                    //df.format(linear_acceleration[2]),
                     df.format(location.getLatitude()),
                     df.format(location.getLongitude()));
             Log.d(TAG, update);
-            log.append(update + "\n");
 
+            /*
             if (socketService != null)
                 socketService.sendMessage(update);
             else
-                Log.d(TAG, "NULLLLLLLLLLLLLLLLLLL");
+                Log.d(TAG, "NULLLLLLLLLLLLLLLLLLL"); */
         }
     }
 
@@ -95,10 +89,6 @@ public class SamplingData {
         logSample();
     }
 
-    static void setTextView(TextView log) {
-        SamplingData.log = log;
-    }
-
     static String createLogFile() throws IOException {
         Boolean createdFolder;
 
@@ -109,12 +99,11 @@ public class SamplingData {
         }
 
         if (createdFolder) {
-            Calendar c = Calendar.getInstance();
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String formattedDate = df.format(c.getTime());
-            String filePath = Environment.getExternalStorageDirectory() + "/DMDataGenerator-Samples/sample-" + formattedDate + "-" + clientName;
+            String filePath = Environment.getExternalStorageDirectory() + "/DMDataGenerator-Samples/sample-" +
+                    System.currentTimeMillis() + "-" + clientName;
             Runtime.getRuntime().exec(new String[]{"logcat", "-f", filePath, "DataGenerator-Sample:V", "*:S"});
-
+            Runtime.getRuntime().exec(new String[]{"sed", "-i", "/beginning/d", filePath});
+            Runtime.getRuntime().exec(new String[]{"logcat", "-c"});
             return filePath;
         }
 
