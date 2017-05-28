@@ -25,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.net.Socket;
 
 public class SecondActivity extends AppCompatActivity implements LocationListener{
 
@@ -48,6 +49,35 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
             mServiceBound = false;
         }
     };
+
+    private SocketService mSocketService;
+    private boolean socketServiceBound = false;
+    private ServiceConnection mSocketServiceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            SocketService.LocalBinder myBinder = (SocketService.LocalBinder) iBinder;
+            mSocketService = myBinder.getService();
+            SamplingData.setSocketService(mSocketService);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            socketServiceBound = false;
+        }
+    };
+
+    private void doBindService() {
+        bindService(new Intent(SecondActivity.this, SocketService.class), mSocketServiceConnection, Context.BIND_AUTO_CREATE);
+        socketServiceBound = true;
+    }
+
+    private void doUnbindService() {
+        if (socketServiceBound) {
+            unbindService(mSocketServiceConnection);
+            socketServiceBound = false;
+        }
+    }
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -111,6 +141,7 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
             public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
                 Log.i(TAG, "active switch changed state to " + Boolean.toString(checked));
                 if (checked) {
+
                     Log.d(TAG, "started SensorService");
                     Intent intent = new Intent(getApplicationContext(), SensorService.class);
                     startService(intent);
@@ -123,7 +154,9 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
                         e.printStackTrace();
                     }
                     startLocationRequests();
+
                 } else {
+
                     Log.d(TAG, "stopped SensorService");
                     if (mServiceBound) {
                         unbindService(mServiceConnection);
@@ -145,6 +178,8 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
             }
         });
 
+        startService(new Intent(SecondActivity.this, SocketService.class));
+        doBindService();
     }
 
     @Override

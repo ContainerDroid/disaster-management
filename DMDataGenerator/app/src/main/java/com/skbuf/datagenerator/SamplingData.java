@@ -10,6 +10,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.math.RoundingMode;
+import java.net.Socket;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -26,7 +27,17 @@ public class SamplingData {
     private static String serverAddress;
     private static String clientName;
 
-    static public Integer getServerPort(int i) {
+    private static SocketService socketService;
+
+    public static SocketService getSocketService() {
+        return socketService;
+    }
+
+    public static void setSocketService(SocketService socketService) {
+        SamplingData.socketService = socketService;
+    }
+
+    static public Integer getServerPort() {
         return serverPort;
     }
 
@@ -63,6 +74,11 @@ public class SamplingData {
                     df.format(location.getLongitude()));
             Log.d(TAG, update);
             log.append(update + "\n");
+
+            if (socketService != null)
+                socketService.sendMessage(update);
+            else
+                Log.d(TAG, "NULLLLLLLLLLLLLLLLLLL");
         }
     }
 

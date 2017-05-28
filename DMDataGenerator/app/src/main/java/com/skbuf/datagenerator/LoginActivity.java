@@ -30,7 +30,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View view) {
                 SamplingData.setServerAddress(editServerAdrress.getText().toString());
                 SamplingData.setClientName(editClientName.getText().toString());
-                SamplingData.getServerPort(Integer.parseInt(editServerPort.getText().toString()));
+                SamplingData.setServerPort(Integer.parseInt(editServerPort.getText().toString()));
 
                 Intent intent = new Intent(getApplicationContext(), SecondActivity.class);
                 startActivity(intent);
