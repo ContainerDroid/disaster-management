@@ -29,6 +29,24 @@ public class GenerateSampleFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         //you can set the title for your toolbar here for different fragments different titles
         getActivity().setTitle(getText(R.string.title_generate_sample));
+
+        generateStart = (Button) getView().findViewById(R.id.button_generate_start);
+        generateSafe = (Button) getView().findViewById(R.id.button_generate_safe);
+        mapFragment = (MapFragment) getActivity().getFragmentManager().findFragmentById(R.id.map_fragment);
+
+        generateStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                updateState(generateStarted);
+            }
+        });
+
+        generateSafe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                updateState(generateStarted);
+            }
+        });
     }
 
 
@@ -57,30 +75,3 @@ public class GenerateSampleFragment extends Fragment {
         }
     }
 }
-
-    /*
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_generate_sample);
-
-
-        generateStart = (Button) findViewById(R.id.button_generate_start);
-        generateSafe = (Button) findViewById(R.id.button_generate_safe);
-        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map_fragment);
-
-        generateStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                updateState(generateStarted);
-            }
-        });
-
-        generateSafe.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                updateState(generateStarted);
-            }
-        });
-    }
-*/
