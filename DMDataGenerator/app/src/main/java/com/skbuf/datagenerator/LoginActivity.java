@@ -32,7 +32,7 @@ public class LoginActivity extends AppCompatActivity {
                 SamplingData.setClientName(editClientName.getText().toString());
                 SamplingData.setServerPort(Integer.parseInt(editServerPort.getText().toString()));
 
-                Intent intent = new Intent(getApplicationContext(), GenerateSampleActivity.class);
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
             }
         });
