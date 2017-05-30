@@ -144,7 +144,8 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
                 .FusedLocationApi
                 .getLastLocation( mGoogleApiClient );
 
-        initCamera( mCurrentLocation );
+        if (mCurrentLocation != null )
+            initCamera( mCurrentLocation );
     }
 
     @Override
