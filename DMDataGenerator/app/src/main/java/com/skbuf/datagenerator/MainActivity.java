@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity
             fragment = new GenerateSampleFragment();
         } else if (itemId == R.id.nav_settings) {
 
+        } else if (itemId == R.id.nav_create) {
+            fragment = new CreateCustomSampleFragment();
         }
 
         if (fragment != null) {

@@ -110,5 +110,9 @@ public class SamplingData {
         return new String("Could not save log file!");
     }
 
+    static String getSamplesPath() {
+        return "/sdcard/DMDataGenerator-Samples/";
+    }
+
 
 }

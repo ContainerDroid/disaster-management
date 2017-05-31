@@ -7,12 +7,17 @@
     <string name="error_field_required">This field is required</string>
 
     <!-- Strings related to generate sample -->
-    <string name="button_generate_start">START</string>
-    <string name="button_generate_safe">SAFE</string>
+    <string name="button_generate_start">Start</string>
+    <string name="button_generate_safe">Safe</string>
     <string name="title_generate_sample">Generate Samples</string>
 
     <!-- Strings related navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- Strings related to create custom -->
+    <string name="button_create_save">Save</string>
+    <string name="button_create_browse">Browse</string>
+    <string name="title_create">Create Custom Sample</string>
 
 </resources>
