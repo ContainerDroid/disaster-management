@@ -8,7 +8,5 @@ public class DisasterManagement {
 		AndroidProxyService proxy =
 			new AndroidProxyService(6970);
 		new Thread(proxy).start();
-
-		SafeLocationService locations = new SafeLocationService();
 	}
 }

@@ -28,12 +28,15 @@ class ConnectionWorker implements Runnable {
 	}
 
 	public void run() {
+		ClientLocationService cls = ClientLocationService.getInstance();
+		SafeLocationService sls = SafeLocationService.getInstance();
+
 		try {
 			OutputStream output = cs.getOutputStream();
 			BufferedReader input = new BufferedReader(
 				new InputStreamReader(cs.getInputStream()));
 
-			ClientLocationMessage clm;
+			ClientMessage cm;
 			String msg;
 			
 			while ((msg = input.readLine()) != null) {
@@ -41,9 +44,18 @@ class ConnectionWorker implements Runnable {
 					input.close();
 					break;
 				}
-				clm = g.fromJson(msg,
-						ClientLocationMessage.class);
-				System.out.println(clm);
+				cm = g.fromJson(msg, ClientMessage.class);
+				if (cm.msgtype.compareTo("client-location") == 0) {
+					cls.add(new ClientLocation(cm));
+					cls.list();
+				} else if (cm.msgtype.compareTo("safe-location") == 0) {
+					sls.add(new SafeLocation(cm));
+					sls.list();
+				} else if (cm.msgtype.compareTo("safe-location-preferences") == 0) {
+
+				} else if (cm.msgtype.compareTo("safe-location-request") == 0) {
+
+				}
 				long time = System.currentTimeMillis();
 				System.out.println("Request processed: " + time);
 			}

@@ -1,13 +1,13 @@
 package com.androidiot.dm;
 
 
-public class ClientLocationMessage {
+public class ClientMessage {
 	public String msgtype;
 	public String name;
 	public String timestamp;
 	public String latitude;
 	public String longitude;
-	public ClientLocationMessage() {
+	public ClientMessage() {
 	}
 	@Override
 	public String toString() {
