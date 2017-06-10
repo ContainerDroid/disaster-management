@@ -1,5 +1,6 @@
 package com.skbuf.datagenerator;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,10 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class CreateCustomSampleFragment extends Fragment {
 
     private final String TAG = "CreateCustomSampleFragment";
+    private final Integer FILE_SELECT_CODE = 1;
     private Button buttonSave, buttonBrowse;
 
     @Override
@@ -48,13 +51,24 @@ public class CreateCustomSampleFragment extends Fragment {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 String samplesDir = SamplingData.getSamplesPath();
                 Uri uri = Uri.parse(samplesDir);
-                intent.setDataAndType(uri, "*/*");
+                intent.setDataAndType(uri, "text/*");
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 Intent cintent = Intent.createChooser(intent, "Choose files");
-                startActivity(cintent);
+                startActivityForResult(cintent, FILE_SELECT_CODE);
 
             }
         });
     }
 
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_SELECT_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Toast.makeText(getActivity(), "chosen file " + data.getData().toString(), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 }
