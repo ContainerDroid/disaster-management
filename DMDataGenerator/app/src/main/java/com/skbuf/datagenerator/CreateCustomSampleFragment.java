@@ -1,6 +1,7 @@
 package com.skbuf.datagenerator;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,13 +12,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CreateCustomSampleFragment extends Fragment {
 
     private final String TAG = "CreateCustomSampleFragment";
     private final Integer FILE_SELECT_CODE = 1;
+    private List<String> filesSelected = new ArrayList<String>();
+
     private Button buttonSave, buttonBrowse;
+    private ListView lv;
+    private FileListAdapter adapter;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,6 +69,10 @@ public class CreateCustomSampleFragment extends Fragment {
 
             }
         });
+
+        adapter = new FileListAdapter(getContext(), filesSelected);
+        lv = (ListView) getView().findViewById(R.id.list);
+        lv.setAdapter(adapter);
     }
 
 
@@ -67,7 +82,9 @@ public class CreateCustomSampleFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_SELECT_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                Toast.makeText(getActivity(), "chosen file " + data.getData().toString(), Toast.LENGTH_LONG).show();
+                String sampleFile = data.getData().toString().replaceFirst("file:///storage/emulated/0/DMDataGenerator-Samples/", "");
+                filesSelected.add(sampleFile);
+                adapter.notifyDataSetChanged();
             }
         }
     }
