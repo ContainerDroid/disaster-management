@@ -14,12 +14,12 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 class ConnectionWorker implements Runnable {
-	private Socket cs = null;
+	private Socket socket = null;
 	private Gson g;
 	volatile Boolean isStopped = false;
 
-	public ConnectionWorker(Socket cs) {
-		this.cs = cs;
+	public ConnectionWorker(Socket socket) {
+		this.socket = socket;
 		this.g = new Gson();
 	}
 
@@ -32,9 +32,9 @@ class ConnectionWorker implements Runnable {
 		SafeLocationService sls = SafeLocationService.getInstance();
 
 		try {
-			OutputStream output = cs.getOutputStream();
+			OutputStream output = socket.getOutputStream();
 			BufferedReader input = new BufferedReader(
-				new InputStreamReader(cs.getInputStream()));
+				new InputStreamReader(socket.getInputStream()));
 
 			ClientMessage cm;
 			String msg;
