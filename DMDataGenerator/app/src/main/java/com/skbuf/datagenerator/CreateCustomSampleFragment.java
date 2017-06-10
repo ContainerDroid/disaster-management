@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -16,14 +17,19 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CreateCustomSampleFragment extends Fragment {
 
-    private final String TAG = "CreateCustomSampleFragment";
-    private final Integer FILE_SELECT_CODE = 1;
+    private final String TAG = "CreateCustomSample";
     private List<String> filesSelected = new ArrayList<String>();
+
+    private final Integer FILE_SELECT_CODE = 1;
+    private final Integer FILE_CREATE_CODE = 2;
 
     private Button buttonSave, buttonBrowse;
     private ListView lv;
@@ -51,7 +57,11 @@ public class CreateCustomSampleFragment extends Fragment {
         buttonSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("text/*");
+                Intent cintent = Intent.createChooser(intent, "Choose files");
+                startActivityForResult(cintent, FILE_CREATE_CODE);
             }
         });
 
@@ -85,6 +95,32 @@ public class CreateCustomSampleFragment extends Fragment {
                 String sampleFile = data.getData().toString().replaceFirst("file:///storage/emulated/0/DMDataGenerator-Samples/", "");
                 filesSelected.add(sampleFile);
                 adapter.notifyDataSetChanged();
+            }
+        } else if (requestCode == FILE_CREATE_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri uri = data.getData();
+                String customSampleFile = uri.toString();
+
+                Log.d(TAG, "Created custom file: " + customSampleFile);
+                Toast.makeText(getContext(), customSampleFile, Toast.LENGTH_LONG).show();
+
+                try {
+                    ParcelFileDescriptor pfd = getActivity().getContentResolver().
+                            openFileDescriptor(uri, "w");
+                    FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
+
+                    fileOutputStream.write("TODO TODO TODO".getBytes());
+
+                    fileOutputStream.close();
+                    pfd.close();
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
             }
         }
     }
