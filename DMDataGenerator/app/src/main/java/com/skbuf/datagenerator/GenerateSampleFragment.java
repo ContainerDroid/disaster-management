@@ -118,7 +118,7 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
 
     private void createLogFile() {
         try {
-            String logFile = SamplingData.createLogFile();
+            String logFile = GlobalData.createLogFile();
             Toast.makeText(this.getActivity().getApplicationContext(),
                     "Sample stored at " + logFile, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
@@ -161,7 +161,7 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
 
     @Override
     public void onLocationChanged(Location location) {
-        SamplingData.setLocation(location);
+        GlobalData.setLocation(location);
 
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();

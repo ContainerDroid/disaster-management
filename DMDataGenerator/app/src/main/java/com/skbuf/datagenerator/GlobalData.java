@@ -17,7 +17,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 
 
-public class SamplingData {
+public class GlobalData {
     private static final String TAG = "DataGenerator-Sample";
     private static Location location = null;
     private static float linear_acceleration[] = new float[3];
@@ -76,14 +76,14 @@ public class SamplingData {
 
 
     static void setLocation(Location location) {
-        SamplingData.location = location;
+        GlobalData.location = location;
         logSample();
     }
 
     static void setLinear_acceleration(float linear_acceleration[]) {
-        SamplingData.linear_acceleration[0] = linear_acceleration[0];
-        SamplingData.linear_acceleration[1] = linear_acceleration[1];
-        SamplingData.linear_acceleration[2] = linear_acceleration[2];
+        GlobalData.linear_acceleration[0] = linear_acceleration[0];
+        GlobalData.linear_acceleration[1] = linear_acceleration[1];
+        GlobalData.linear_acceleration[2] = linear_acceleration[2];
         logSample();
     }
 
@@ -117,7 +117,7 @@ public class SamplingData {
         public void run() {
             try {
                 Runtime.getRuntime().exec(new String[]{"logcat", "-d", "-f", filePath, "DataGenerator-Sample:V", "*:S"}).waitFor();
-                SamplingData.alterDataFormat(filePath);
+                GlobalData.alterDataFormat(filePath);
                 Runtime.getRuntime().exec(new String[]{"logcat", "-c"}).waitFor();
             } catch (IOException e) {
                 e.printStackTrace();

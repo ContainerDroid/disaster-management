@@ -3,9 +3,7 @@ package com.skbuf.datagenerator;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -175,7 +173,7 @@ public class MapFragment extends com.google.android.gms.maps.MapFragment impleme
 
     @Override
     public void onLocationChanged(Location location) {
-        SamplingData.setLocation(location);
+        GlobalData.setLocation(location);
 
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
