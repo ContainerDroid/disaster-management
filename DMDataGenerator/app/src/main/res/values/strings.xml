@@ -18,9 +18,19 @@
     <!-- Strings related to create custom -->
     <string name="button_create_save">Save</string>
     <string name="button_create_browse">Browse</string>
-    <string name="title_create">Create Custom Sample</string>
+    <string name="title_create_custom">Create Custom Sample</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- Strings related to settings fragment -->
+    <string name="title_settings">Settings</string>
+    <string name="settings_text">
+        Preferences might be:\n
+                \t1/4 Not at all important\n
+                \t1/3 Not important\n
+                \t1/2 Slightly less important\n
+                \t1   Equally important\n
+                \t2   Slightly more important\n
+                \t3   More important\n
+                \t4   Extremely important\n
+    </string>
 
 </resources>

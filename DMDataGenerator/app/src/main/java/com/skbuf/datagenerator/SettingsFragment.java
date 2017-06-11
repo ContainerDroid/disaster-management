@@ -3,10 +3,12 @@ package com.skbuf.datagenerator;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,6 +40,7 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getActivity().setTitle(getText(R.string.title_settings));
 
         adapter = new SettingsAdapter(getContext(), pairwiseComparisons);
         lv = (ListView) getView().findViewById(R.id.pref_list);

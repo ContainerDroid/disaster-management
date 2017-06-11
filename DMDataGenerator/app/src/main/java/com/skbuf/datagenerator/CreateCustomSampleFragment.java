@@ -58,6 +58,7 @@ public class CreateCustomSampleFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getActivity().setTitle(getText(R.string.title_create_custom));
 
         buttonSave = (Button) getView().findViewById(R.id.button_create_save);
         buttonBrowse = (Button) getView().findViewById(R.id.button_create_browse);
