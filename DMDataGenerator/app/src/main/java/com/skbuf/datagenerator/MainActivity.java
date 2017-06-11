@@ -71,13 +71,13 @@ public class MainActivity extends AppCompatActivity
         Fragment fragment = null;
 
         if (itemId == R.id.nav_live) {
-            fragment = null;
+
         } else if (itemId == R.id.nav_replay) {
 
         } else if (itemId == R.id.nav_generate_samples) {
             fragment = new GenerateSampleFragment();
         } else if (itemId == R.id.nav_settings) {
-
+            fragment = new SettingsFragment();
         } else if (itemId == R.id.nav_create) {
             fragment = new CreateCustomSampleFragment();
         }
