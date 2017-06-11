@@ -64,6 +64,10 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
 
     private Boolean saveLocation = false;
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Nullable
     @Override
