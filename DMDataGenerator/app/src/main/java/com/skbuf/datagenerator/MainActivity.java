@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity
             fragment = new SettingsFragment();
         } else if (itemId == R.id.nav_create) {
             fragment = new CreateCustomSampleFragment();
+        } else if (itemId == R.id.nav_friends) {
+            fragment = new FriendsFragment();
         }
 
         if (fragment != null) {
