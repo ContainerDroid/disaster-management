@@ -44,9 +44,6 @@ public class SettingsAdapter extends BaseAdapter {
         LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View newView = inflater.inflate(R.layout.preferences_item, null);
 
-        TextView criteriaText = (TextView) newView.findViewById(R.id.criteria);
-        criteriaText.setText(getItem(position));
-
         return newView;
     }
 
