@@ -7,6 +7,10 @@ public class ClientMessage {
 	public String timestamp;
 	public String latitude;
 	public String longitude;
+
+	public String[] criteria;
+	public String[] pairwiseComparisons;
+
 	public ClientMessage() {
 	}
 	@Override

@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -27,8 +29,16 @@ class ConnectionWorker implements Runnable {
 		isStopped = true;
 	}
 
+	private void sendSafeLocations(OutputStream out, String clientName) {
+		PrintStream stream = new PrintStream(out, true);
+		AndroidClientService acs = AndroidClientService.getInstance();
+		SafeLocationService sls = SafeLocationService.getInstance();
+
+		sls.list(stream);
+	}
+
 	public void run() {
-		ClientLocationService cls = ClientLocationService.getInstance();
+		AndroidClientService acs = AndroidClientService.getInstance();
 		SafeLocationService sls = SafeLocationService.getInstance();
 
 		try {
@@ -38,7 +48,7 @@ class ConnectionWorker implements Runnable {
 
 			ClientMessage cm;
 			String msg;
-			
+
 			while ((msg = input.readLine()) != null) {
 				if (isStopped) {
 					input.close();
@@ -46,15 +56,17 @@ class ConnectionWorker implements Runnable {
 				}
 				cm = g.fromJson(msg, ClientMessage.class);
 				if (cm.msgtype.compareTo("client-location") == 0) {
-					cls.add(new ClientLocation(cm));
-					cls.list();
+					acs.addLocation(cm.name, new Location(cm));
+					acs.list();
 				} else if (cm.msgtype.compareTo("safe-location") == 0) {
-					sls.add(new SafeLocation(cm));
-					sls.list();
+					sls.add(new Location(cm));
+					sls.list(System.out);
 				} else if (cm.msgtype.compareTo("safe-location-preferences") == 0) {
-
+					acs.setPreferences(cm.name, new ClientPreferences(cm));
 				} else if (cm.msgtype.compareTo("safe-location-request") == 0) {
-
+					sendSafeLocations(output, cm.name);
+				} else {
+					System.err.println("Unknown msgtype received for " + cm);
 				}
 				long time = System.currentTimeMillis();
 				System.out.println("Request processed: " + time);
