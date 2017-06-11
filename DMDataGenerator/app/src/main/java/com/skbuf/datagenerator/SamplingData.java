@@ -28,16 +28,6 @@ public class SamplingData {
     private static String serverAddress;
     private static String clientName;
 
-    private static SocketService socketService;
-
-    public static SocketService getSocketService() {
-        return socketService;
-    }
-
-    public static void setSocketService(SocketService socketService) {
-        SamplingData.socketService = socketService;
-    }
-
     static public Integer getServerPort() {
         return serverPort;
     }
