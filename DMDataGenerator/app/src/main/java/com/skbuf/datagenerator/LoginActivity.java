@@ -47,7 +47,6 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    
     private void requestPermissionIfNeeded(String perm) {
 
         requestPermissions(

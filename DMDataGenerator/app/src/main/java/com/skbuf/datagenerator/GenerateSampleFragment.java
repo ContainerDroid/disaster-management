@@ -2,6 +2,7 @@ package com.skbuf.datagenerator;
 
 import android.graphics.Color;
 import android.location.Location;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -29,6 +30,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -42,7 +47,12 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
 
     private static String TAG = "GenerateSampleFragment";
 
-    Button generateStart, generateSafe;
+    /* logging */
+    File sampleFile;
+    BufferedWriter sampleFileWriter;
+    FileWriter sampleOutStream;
+
+    Button generateStart, generateSafe, generateRequest;
     MapView mapView;
     Boolean generateStarted = false;
 
@@ -60,8 +70,6 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
     private LocationRequest mLocationRequest;
     private ArrayList<LatLng> points;
     Polyline line;
-
-
     private Boolean saveLocation = false;
 
     @Override
@@ -84,6 +92,7 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
 
         generateStart = (Button) getView().findViewById(R.id.button_generate_start);
         generateSafe = (Button) getView().findViewById(R.id.button_generate_safe);
+        generateRequest = (Button) getView().findViewById(R.id.button_generate_request);
 
         mapView = (MapView) view.findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
@@ -103,6 +112,37 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
         generateStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.d(TAG, "generate started " + generateStarted);
+                if (!generateStarted) {
+                    createSampleFile();
+                    openSampleFile();
+
+                    try {
+                        // write message of type "friends"
+                        Message friendMessage = new Message(Message.MSG_TYPE_FRIENDS,
+                                GlobalData.getClientName(),
+                                GlobalData.getFriends());
+                        sampleFileWriter.write(friendMessage.toString() + "\n");
+
+                        // write message of type "safe-location-preferences"
+                        Message prefMessage = new Message(Message.MSG_TYPE_PREF,
+                                GlobalData.getClientName(),
+                                GlobalData.getCriteria(),
+                                GlobalData.getPref());
+                        sampleFileWriter.write(prefMessage.toString() + "\n");
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                } else {
+                    try {
+                        sampleFileWriter.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 updateState(generateStarted);
             }
         });
@@ -111,19 +151,59 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
             @Override
             public void onClick(View view) {
                 updateState(generateStarted);
+                try {
+
+                    // write message of type "safe-location"
+                    Message safeMessage = new Message(Message.MSG_TYPE_SAFE,
+                            GlobalData.getClientName(),
+                            System.currentTimeMillis(),
+                            GlobalData.getLocation());
+                    sampleFileWriter.write(safeMessage.toString() + "\n");
+
+                    sampleFileWriter.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        generateRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                try {
+                    // write msg of type safe-location-request
+                    Message requestMessage = new Message(Message.MSG_TYPE_REQUEST,
+                            System.currentTimeMillis());
+                    sampleFileWriter.write(requestMessage.toString() + "\n");
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
 
+    private void createSampleFile() {
 
-    private void createLogFile() {
         try {
-            String logFile = GlobalData.createLogFile();
-            Toast.makeText(this.getActivity().getApplicationContext(),
-                    "Sample stored at " + logFile, Toast.LENGTH_SHORT).show();
+            String filePath = Environment.getExternalStorageDirectory() + "/DMDataGenerator-Samples/sample-" +
+                    System.currentTimeMillis() + "-" + GlobalData.getClientName();
+
+            sampleFile = new File(filePath);
+            sampleFile.getParentFile().mkdirs();
+            sampleFile.createNewFile();
+
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (InterruptedException e) {
+        }
+    }
+
+    private void openSampleFile() {
+        try {
+            sampleOutStream = new FileWriter(sampleFile, true);
+            sampleFileWriter = new BufferedWriter(sampleOutStream);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -139,7 +219,6 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
             this.generateSafe.setEnabled(false);
             this.generateStarted = false;
             stopLocationUpdates();
-            createLogFile();
         }
     }
 
@@ -162,6 +241,16 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onLocationChanged(Location location) {
         GlobalData.setLocation(location);
+
+        try {
+            Message locationUpdateMessage = new Message(Message.MSG_TYPE_LOCATION,
+                    GlobalData.getClientName(),
+                    System.currentTimeMillis(),
+                    location);
+            sampleFileWriter.write(locationUpdateMessage.toString() + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();

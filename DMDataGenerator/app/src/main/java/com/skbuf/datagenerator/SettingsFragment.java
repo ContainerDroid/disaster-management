@@ -52,6 +52,8 @@ public class SettingsFragment extends Fragment {
         adapter = new SettingsAdapter(getContext(), pairwiseComparisons);
         lv = (ListView) getView().findViewById(R.id.pref_list);
         lv.setAdapter(adapter);
+
+        GlobalData.setCriteria(criteria);
     }
 
     private List<Pair<String, String>> createPairwiseComparisons(List<String> criteria) {

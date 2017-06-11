@@ -65,6 +65,9 @@ public class FriendsFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 friends.add(input.getText().toString());
+                                List<String> f = GlobalData.getFriends();
+                                f.add(input.getText().toString());
+                                GlobalData.setFriends(f);
                                 Log.d(TAG, "added new friend: " + input.getText().toString());
                             }
                         });

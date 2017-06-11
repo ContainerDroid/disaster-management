@@ -10,6 +10,8 @@
     <string name="button_generate_start">Start</string>
     <string name="button_generate_safe">Safe</string>
     <string name="title_generate_sample">Generate Samples</string>
+    <string name="button_generate_request">Request</string>
+
 
     <!-- Strings related navigation drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>

@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,6 +22,8 @@ public class SettingsAdapter extends BaseAdapter {
     private final String TAG = "SettingsAdapter";
 
     private List<Pair<String, String>> pairwiseComparisons;
+    private List<Float> pairwiseComparisonsFloat;
+
     private Context context;
     private HashMap<Integer, String> seekbarValueString = new HashMap<Integer, String>(){{
         put(0,"Not at all important");
@@ -31,11 +34,25 @@ public class SettingsAdapter extends BaseAdapter {
         put(5,"More important");
         put(6,"Extremely important");
     }};
+    private HashMap<Integer, Float> seekbarValueFloat = new HashMap<Integer, Float>(){{
+        put(0, 0.25f);
+        put(1, 0.33f);
+        put(2, 0.5f);
+        put(3, 1.0f);
+        put(4, 2.0f);
+        put(5, 3.0f);
+        put(6, 4.0f);
+    }};
 
 
     public SettingsAdapter(Context context, List<Pair<String, String>> pairwiseComparisons) {
         this.context = context;
         this.pairwiseComparisons = pairwiseComparisons;
+
+        this.pairwiseComparisonsFloat = new ArrayList<Float>();
+        for (Integer i = 0; i < pairwiseComparisons.size(); i++)
+            pairwiseComparisonsFloat.add(1.0f);
+        GlobalData.setPref(this.pairwiseComparisonsFloat);
     }
 
     @Override
@@ -83,6 +100,7 @@ public class SettingsAdapter extends BaseAdapter {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 currentOption.setText("  : " + seekbarValueString.get(i));
+                pairwiseComparisonsFloat.set(position, seekbarValueFloat.get(i));
             }
 
             @Override

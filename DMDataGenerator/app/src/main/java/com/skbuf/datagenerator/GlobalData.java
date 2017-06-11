@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class GlobalData {
@@ -27,6 +29,37 @@ public class GlobalData {
     private static Integer serverPort;
     private static String serverAddress;
     private static String clientName;
+
+    /* data from friends page */
+    private static List<String> friends = new ArrayList<String>();
+
+    /* data from settings page */
+    private static List<String> criteria;
+    private static List<Float> pref;
+
+    public static List<String> getCriteria() {
+        return criteria;
+    }
+
+    public static void setCriteria(List<String> criteria) {
+        GlobalData.criteria = criteria;
+    }
+
+    public static List<Float> getPref() {
+        return pref;
+    }
+
+    public static void setPref(List<Float> pref) {
+        GlobalData.pref = pref;
+    }
+
+    public static List<String> getFriends() {
+        return friends;
+    }
+
+    public static void setFriends(List<String> friends) {
+        GlobalData.friends = friends;
+    }
 
     static public Integer getServerPort() {
         return serverPort;
@@ -80,51 +113,15 @@ public class GlobalData {
         logSample();
     }
 
+    static Location getLocation() {
+        return location;
+    }
+
     static void setLinear_acceleration(float linear_acceleration[]) {
         GlobalData.linear_acceleration[0] = linear_acceleration[0];
         GlobalData.linear_acceleration[1] = linear_acceleration[1];
         GlobalData.linear_acceleration[2] = linear_acceleration[2];
         logSample();
-    }
-
-    static String createLogFile() throws IOException, InterruptedException {
-        Boolean createdFolder;
-
-        logDir = new File(Environment.getExternalStorageDirectory() + "/DMDataGenerator-Samples/");
-        createdFolder = true;
-        if (!logDir.exists()) {
-            createdFolder = logDir.mkdirs();
-        }
-
-        if (createdFolder) {
-            String filePath = Environment.getExternalStorageDirectory() + "/DMDataGenerator-Samples/sample-" +
-                    System.currentTimeMillis() + "-" + clientName;
-            SaveFileThread thread = new SaveFileThread(filePath);
-            thread.run();
-            return filePath;
-        }
-
-        return new String("Could not save log file!");
-    }
-
-    static class SaveFileThread extends  Thread {
-        String filePath;
-
-        SaveFileThread(String filePath) {
-            this.filePath = filePath;
-        }
-
-        public void run() {
-            try {
-                Runtime.getRuntime().exec(new String[]{"logcat", "-d", "-f", filePath, "DataGenerator-Sample:V", "*:S"}).waitFor();
-                GlobalData.alterDataFormat(filePath);
-                Runtime.getRuntime().exec(new String[]{"logcat", "-c"}).waitFor();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     static String getSamplesPath() {
