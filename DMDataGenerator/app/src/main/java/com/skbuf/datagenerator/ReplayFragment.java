@@ -1,13 +1,20 @@
 package com.skbuf.datagenerator;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.google.android.gms.common.ConnectionResult;
@@ -18,11 +25,25 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.gson.Gson;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 
 public class ReplayFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
@@ -44,9 +65,20 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
     private static final long INTERVAL = 300; // 300ms
     private static final long FASTEST_INTERVAL = 100; // 100ms
     private static final float SMALLEST_DISPLACEMENT = 0.25F;
-
+    private final Integer FILE_SELECT_CODE = 13;
 
     FloatingActionButton uploadFile, nextButton;
+
+    // drawing on the map
+    List<Integer> colors = Arrays.asList(Color.BLUE, Color.GREEN, Color.YELLOW, Color.RED);
+    Integer currentColor = 0;
+
+    HashMap<String, List<LatLng>> usersLocations = new HashMap<String, List<LatLng>>();
+    HashMap<String, Integer> usersColor = new HashMap<String, Integer>();
+
+    BufferedReader br;
+    Polyline line;
+    Boolean simulationStarted = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -84,16 +116,189 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
         uploadFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                String samplesDir = GlobalData.getSamplesPath();
+                Uri uri = Uri.parse(samplesDir);
+                intent.setDataAndType(uri, "text/*");
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                Intent cintent = Intent.createChooser(intent, "Choose files");
+                startActivityForResult(cintent, FILE_SELECT_CODE);
             }
         });
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                ReplayStep();
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_SELECT_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                Uri sampleSelectedURI = data.getData();
+                Log.d(TAG, "Selected file: " + sampleSelectedURI.getPath());
+
+                // should start to display
+                replay(sampleSelectedURI);
+            }
+        }
+    }
+
+    private void replay(Uri uri) {
+        ParcelFileDescriptor inputPfd = null;
+        Message message;
+        String line;
+        Gson gson = new Gson();
+
+        try {
+            inputPfd = getActivity().getContentResolver().openFileDescriptor(uri, "r");
+            FileInputStream fileInputStream = new FileInputStream(inputPfd.getFileDescriptor());
+            br = new BufferedReader(new InputStreamReader(fileInputStream));
+
+            while ((line = br.readLine()) != null) {
+                // TODO: send line to server
+
+                Log.d(TAG, line);
+                message = gson.fromJson(line, Message.class);
+
+                if (message.msgtype.equals(Message.MSG_TYPE_LOCATION) == false){
+                    String user = message.getUsername();
+                    if (usersLocations.containsKey(user) == false) {
+                        usersLocations.put(user, new ArrayList<LatLng>());
+                        usersColor.put(user, colors.get(currentColor++));
+                    }
+                } else if (message.msgtype.equals(Message.MSG_TYPE_LOCATION)){
+                    insertNewLocation(message);
+                    break;
+                } else {
+                    break;
+                }
+            }
+
+            simulationStarted = true;
+            ReplayStep();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void insertNewLocation(Message message) {
+        String user = message.getUsername();
+        List<LatLng> locations = usersLocations.get(user);
+        LatLng newLocation = new LatLng(message.getLatitude(), message.getLongitude());
+        locations.add(newLocation);
+        usersLocations.put(user, locations);
+    }
+
+    private void ReplayStep() {
+        StepThread thread = new StepThread();
+        thread.run();
+    }
+
+    public class StepThread implements Runnable {
+
+        @Override
+        public void run() {
+            String line;
+            Message message;
+            Gson gson = new Gson();
+            String username = "";
+            Boolean replayStopped = false;
+
+            try {
+                if (simulationStarted == false) {
+                    Toast.makeText(getActivity(), "No simulation active!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                while ((line = br.readLine()) != null) {
+                    Log.d(TAG, line);
+                    message = gson.fromJson(line, Message.class);
+
+                    // TODO: send line to server
+
+                    if (message.msgtype.equals(Message.MSG_TYPE_LOCATION)) {
+                        insertNewLocation(message);
+                    } else if (message.msgtype.equals(Message.MSG_TYPE_REQUEST)){
+                        username = message.getUsername();
+                        replayStopped = true;
+                        break;
+                    }
+                }
+
+                if (replayStopped == false) {
+                    br.close();
+                    br = null;
+                    simulationStarted = false;
+                    Toast.makeText(getActivity(), "Simulation finished!", Toast.LENGTH_SHORT).show();
+                } else {
+                    redrawLines();
+                    Toast.makeText(getActivity(), username + " made a request for location", Toast.LENGTH_SHORT).show();
+                }
+
+            } catch (IOException e) {
+                try {
+                    br.close();
+                    br = null;
+                    simulationStarted = false;
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+        }
+    }
+
+    private void redrawLines() {
+
+        mapView.getMap().clear();
+
+        for (String user : usersLocations.keySet()) {
+            List<LatLng> locations = usersLocations.get(user);
+            Integer size = locations.size();
+            if (size == 0)
+                continue;
+            LatLng lastLocation = locations.get(size - 1);
+            Integer color = usersColor.get(user);
+
+            redrawLine(locations, color, lastLocation, user);
+        }
+    }
+
+    private void redrawLine(List<LatLng> locations, Integer color, LatLng lastLocation, String user){
+
+        PolylineOptions options = new PolylineOptions().width(10).color(color).geodesic(true);
+        for (int i = 0; i < locations.size(); i++) {
+            LatLng point = locations.get(i);
+            options.add(point);
+        }
+        float colorMarker = 0.0f;
+        if (color == Color.BLUE)
+            colorMarker = BitmapDescriptorFactory.HUE_BLUE;
+        else  if (color == Color.YELLOW)
+            colorMarker = BitmapDescriptorFactory.HUE_YELLOW;
+        else if (color == Color.GREEN)
+            colorMarker = BitmapDescriptorFactory.HUE_GREEN;
+        else if (color == Color.RED)
+            colorMarker = BitmapDescriptorFactory.HUE_RED;
+
+        addMarker(lastLocation, user, colorMarker);
+        line = mapView.getMap().addPolyline(options);
+    }
+
+    private void addMarker(LatLng lastLocation, String label, float color) {
+        MarkerOptions options = new MarkerOptions();
+        options.position(lastLocation);
+        options.title(label);
+        options.icon(BitmapDescriptorFactory.defaultMarker(color));
+        Marker mapMarker = mapView.getMap().addMarker(options);
     }
 
     @Override
@@ -132,6 +337,7 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
         mapView.getMap().setTrafficEnabled( true );
         mapView.getMap().setMyLocationEnabled( true );
         mapView.getMap().getUiSettings().setZoomControlsEnabled( false );
+        mapView.getMap().setMyLocationEnabled(false);
     }
 
     @Override
