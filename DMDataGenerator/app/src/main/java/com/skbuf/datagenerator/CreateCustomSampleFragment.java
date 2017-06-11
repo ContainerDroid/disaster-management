@@ -17,6 +17,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,6 +26,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CreateCustomSampleFragment extends Fragment {
@@ -70,7 +73,6 @@ public class CreateCustomSampleFragment extends Fragment {
                 startActivityForResult(cintent, FILE_CREATE_CODE);
             }
         });
-
 
         buttonBrowse.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,12 +128,14 @@ public class CreateCustomSampleFragment extends Fragment {
     }
 
     public void createCustomSample(Uri uri) {
+        Gson gson = new Gson();
         Boolean globalOffsetEnabled = switchOffset.isChecked();
         Integer offsetValue = 0;
         if (globalOffsetEnabled == true) {
             offsetValue = Integer.parseInt(globalOffset.getText().toString());
         }
         String line;
+        List<Message> messageList = new ArrayList<Message>();
 
         // concatenate files and adjust timestamp
         try {
@@ -142,30 +146,45 @@ public class CreateCustomSampleFragment extends Fragment {
                 ParcelFileDescriptor inputPfd = getActivity().getContentResolver().openFileDescriptor(inputUri, "r");
                 FileInputStream fileInputStream = new FileInputStream(inputPfd.getFileDescriptor());
                 BufferedReader br = new BufferedReader(new InputStreamReader(fileInputStream));
+                Message message;
+                Message firstMessage;
+                Long fileOffset = new Long(0);
 
-                if (globalOffsetEnabled == true) {
-                    // get first timestamp and write in the output file
-                    line = br.readLine();
-                    String columns[] = line.split(" ");
-                    Long startTimestamp = Long.parseLong(columns[0]);
-                    String newLine = "0 " + columns[1] + " " + columns[2] + " " + columns[3] + "\n";
-                    fileOutputStream.write(newLine.getBytes());
-
-                    while ((line = br.readLine()) != null)   {
-                        columns = line.split(" ");
-                        Long timestamp = Long.parseLong(columns[0]) - startTimestamp + offsetValue;
-                        newLine = timestamp + " " + columns[1] + " " + columns[2] + " " + columns[3] + "\n";
-                        fileOutputStream.write(newLine.getBytes());
-                    }
-                } else {
-                    while ((line = br.readLine()) != null)   {
-                        line = line + "\n";
+                // find the first location message
+                while ((line = br.readLine()) != null) {
+                    firstMessage = gson.fromJson(line, Message.class);
+                    if (firstMessage.msgtype.equals(Message.MSG_TYPE_FRIENDS) ||
+                            firstMessage.msgtype.equals(Message.MSG_TYPE_PREF)) {
                         fileOutputStream.write(line.getBytes());
+                        fileOutputStream.write('\n');
+                    } else {
+                        fileOffset = firstMessage.getTimestamp() - offsetValue;
+                        break;
+                    }
+                }
+
+
+                while ((line = br.readLine()) != null) {
+                    message = gson.fromJson(line, Message.class);
+
+                    if (message.msgtype.equals(Message.MSG_TYPE_FRIENDS) ||
+                        message.msgtype.equals(Message.MSG_TYPE_PREF)) {
+                        fileOutputStream.write(line.getBytes());
+                        fileOutputStream.write('\n');
+                    } else {
+                        message.decreaseTimestampBy(fileOffset);
+                        messageList.add(message);
                     }
                 }
 
                 br.close();
                 fileInputStream.close();
+            }
+
+            Collections.sort(messageList);
+            for (Message msg : messageList) {
+                fileOutputStream.write(msg.toString().getBytes());
+                fileOutputStream.write('\n');
             }
 
             fileOutputStream.close();

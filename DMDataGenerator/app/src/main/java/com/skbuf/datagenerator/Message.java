@@ -14,51 +14,71 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class Message {
+public class Message implements Comparable {
     final static String MSG_TYPE_FRIENDS = "friends";
     final static String MSG_TYPE_PREF = "safe-location-preferences";
     final static String MSG_TYPE_LOCATION = "client-location";
     final static String MSG_TYPE_SAFE = "safe-location";
     final static String MSG_TYPE_REQUEST = "safe-location-request";
 
-    String messageType;
-
+    String msgtype;
 
     // messageType = friends
-    String username;
+    String name;
     List<String> friends = new ArrayList<String>();
 
     // messageType = safe-location-preferences
     private List<String> criteria;
-    private List<Float> pref;
+    private List<Float> pairwiseComparisons;
 
     // messageType = client-location + safe
     private Long timestamp;
     private Location location;
+    private double latitude;
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    private double longitude;
 
     public Message(String type, Long timestamp) {
-        this.messageType = type;
+        this.msgtype = type;
         this.timestamp = timestamp;
     }
 
     public Message(String type, String username, List<String> friends) {
-        this.username = username;
+        this.name = username;
         this.friends = friends;
-        this.messageType = type;
+        this.msgtype = type;
     }
 
     public Message(String type, String username, List<String> criteria, List<Float> pref) {
-        this.username = username;
+        this.name = username;
         this.criteria = criteria;
-        this.pref = pref;
-        this.messageType = type;
+        this.pairwiseComparisons = pref;
+        this.msgtype = type;
     }
 
     public Message(String type, String username, Long timestamp, Location location) {
-        this.username = username;
+        this.name = username;
         this.timestamp = timestamp;
         this.location = location;
-        this.messageType = type;
+        this.msgtype = type;
+        this.latitude = location.getLatitude();
+        this.longitude = location.getLongitude();
     }
 
     public Long getTimestamp() {
@@ -67,6 +87,10 @@ public class Message {
 
     public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public void decreaseTimestampBy(Long offset) {
+        this.timestamp = this.timestamp - offset;
     }
 
     public Location getLocation() {
@@ -78,11 +102,11 @@ public class Message {
     }
 
     public List<Float> getPref() {
-        return this.pref;
+        return this.pairwiseComparisons;
     }
 
     public void setPref(List<Float> pref) {
-        this.pref = pref;
+        this.pairwiseComparisons = pref;
     }
 
     public List<String> getCriteria() {
@@ -94,11 +118,11 @@ public class Message {
     }
 
     public String getUsername() {
-        return username;
+        return name;
     }
 
     public void setUsername(String username) {
-        this.username = username;
+        this.name = username;
     }
 
     public List<String> getFriends() {
@@ -110,11 +134,11 @@ public class Message {
     }
 
     public String getMessageType() {
-        return messageType;
+        return msgtype;
     }
 
     public void setMessageType(String messageType) {
-        this.messageType = messageType;
+        this.msgtype = messageType;
     }
 
     public String toString() {
@@ -127,13 +151,13 @@ public class Message {
             JsonObject result = new JsonObject();
             result.add("msgtype", new JsonPrimitive(msg.getMessageType()));
 
-            if (msg.messageType.equals(Message.MSG_TYPE_FRIENDS)) {
+            if (msg.msgtype.equals(Message.MSG_TYPE_FRIENDS)) {
                 result.add("name", new JsonPrimitive(msg.getUsername()));
                 JsonArray friendsArray = new JsonArray();
                 for (String friend : msg.getFriends())
                     friendsArray.add(new JsonPrimitive(friend));
                 result.add("friends", friendsArray);
-            } else if (msg.messageType.equals(Message.MSG_TYPE_PREF)) {
+            } else if (msg.msgtype.equals(Message.MSG_TYPE_PREF)) {
                 result.add("name", new JsonPrimitive(msg.getUsername()));
 
                 JsonArray criteriaArray = new JsonArray();
@@ -145,17 +169,25 @@ public class Message {
                 for (Float friend : msg.getPref())
                     prefArray.add(new JsonPrimitive(friend));
                 result.add("pairwiseComparisons", prefArray);
-            } else if (msg.messageType.equals(Message.MSG_TYPE_LOCATION) ||
-                    msg.messageType.equals(Message.MSG_TYPE_SAFE)) {
+            } else if (msg.msgtype.equals(Message.MSG_TYPE_LOCATION) ||
+                    msg.msgtype.equals(Message.MSG_TYPE_SAFE)) {
                 result.add("name", new JsonPrimitive(msg.getUsername()));
                 result.add("timestamp", new JsonPrimitive(msg.getTimestamp()));
-                result.add("latitude", new JsonPrimitive(msg.getLocation().getLatitude()));
-                result.add("longitude", new JsonPrimitive(msg.getLocation().getLongitude()));
-            } else if (msg.messageType.equals(Message.MSG_TYPE_REQUEST)) {
+                result.add("latitude", new JsonPrimitive(msg.getLatitude()));
+                result.add("longitude", new JsonPrimitive(msg.getLongitude()));
+            } else if (msg.msgtype.equals(Message.MSG_TYPE_REQUEST)) {
                 result.add("timestamp", new JsonPrimitive(msg.getTimestamp()));
             }
 
             return result;
         }
     }
+
+    @Override
+    public int compareTo(Object msg) {
+        Long timestampOther = ((Message)msg).getTimestamp();
+
+        return (int)(this.timestamp - timestampOther);
+    }
+
 }
