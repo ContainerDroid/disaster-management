@@ -1,15 +1,15 @@
 package com.androidiot.dm;
 
 public class Location {
-	float latitude;
-	float longitude;
+	double latitude;
+	double longitude;
 
 	public Location(ClientMessage cm) {
 		try {
-			this.latitude  = Float.parseFloat(cm.latitude);
-			this.longitude = Float.parseFloat(cm.longitude);
+			this.latitude  = Double.parseDouble(cm.latitude);
+			this.longitude = Double.parseDouble(cm.longitude);
 		} catch (NumberFormatException ex) {
-			System.err.println("Invalid float for latitude " +
+			System.err.println("Invalid double for latitude " +
 					"or longitude");
 		}
 	}

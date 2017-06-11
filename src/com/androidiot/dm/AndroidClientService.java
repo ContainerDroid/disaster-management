@@ -1,5 +1,7 @@
 package com.androidiot.dm;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,9 +39,19 @@ public class AndroidClientService {
 		ac.setPreferences(pref);
 	}
 
-	public void list() {
+	public void list(PrintStream stream) {
+		stream.println("AndroidClientService listing");
 		for (Map.Entry<String, AndroidClient> entry: clients.entrySet()) {
-			System.out.println("Client " + entry.getKey() + ": " + entry.getValue());
+			stream.println("Client " + entry.getKey() + ": ");
+			stream.println(entry.getValue());
 		}
+	}
+
+	public ArrayList<AndroidClient> getClients() {
+		return new ArrayList<AndroidClient>(clients.values());
+	}
+
+	public AndroidClient getClient(String name) {
+		return clients.get(name);
 	}
 }

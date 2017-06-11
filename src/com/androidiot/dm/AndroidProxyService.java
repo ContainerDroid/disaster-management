@@ -14,6 +14,7 @@ import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+//import org.apache.spark.api.java;
 
 class ConnectionWorker implements Runnable {
 	private Socket socket = null;
@@ -29,18 +30,69 @@ class ConnectionWorker implements Runnable {
 		isStopped = true;
 	}
 
-	private void sendSafeLocations(OutputStream out, String clientName) {
-		PrintStream stream = new PrintStream(out, true);
+	private void sendSafeLocations(PrintStream stream, String clientName) {
 		AndroidClientService acs = AndroidClientService.getInstance();
 		SafeLocationService sls = SafeLocationService.getInstance();
+		AndroidClient requester = acs.getClient(clientName);
+		int locationCount = sls.getLocationCount();
 
+		if (requester == null) {
+			System.err.println("Cannot find client " + clientName);
+			return;
+		}
+		stream.println("Your preference consistency ratio is:");
+		stream.println(requester.preferences.getConsistencyRatio());
+
+		ArrayList<AndroidClient> people = acs.getClients();
+		stream.println("Size: " + people.size());
+		acs.list(stream);
 		sls.list(stream);
+
+
+		double[] proximityPriorityVector =
+			CriteriaScoreCalculator.getProximityPriorityVector(requester);
+		double[] safetyPriorityVector =
+			CriteriaScoreCalculator.getSafetyPriorityVector(requester);
+		double[] friendsPriorityVector =
+			CriteriaScoreCalculator.getFriendsPriorityVector(requester);
+		double[] crowdedPriorityVector =
+			CriteriaScoreCalculator.getCrowdednessPriorityVector(requester);
+
+		double[] choices = new double[locationCount];
+		for (int i = 0; i < locationCount; i++) {
+			choices[i]  = crowdedPriorityVector[i] *
+				requester.preferences.getCriteriaWeightByName("notCrowded");
+			choices[i] += proximityPriorityVector[i] *
+				requester.preferences.getCriteriaWeightByName("proximity");
+			choices[i] += safetyPriorityVector[i] *
+				requester.preferences.getCriteriaWeightByName("safety");
+			choices[i] += friendsPriorityVector[i] *
+				requester.preferences.getCriteriaWeightByName("closeToFriends");
+			stream.println("Location " + i + ": " + choices[i]);
+		}
+	}
+
+	private void parseClientMessage(ClientMessage cm, OutputStream output) {
+		AndroidClientService acs = AndroidClientService.getInstance();
+		SafeLocationService sls = SafeLocationService.getInstance();
+		PrintStream stream = new PrintStream(output, true);
+
+		if (cm.msgtype.compareTo("client-location") == 0) {
+			acs.addLocation(cm.name, new Location(cm));
+			acs.list(stream);
+		} else if (cm.msgtype.compareTo("safe-location") == 0) {
+			sls.add(new Location(cm));
+			sls.list(System.out);
+		} else if (cm.msgtype.compareTo("safe-location-preferences") == 0) {
+			acs.setPreferences(cm.name, new ClientPreferences(cm));
+		} else if (cm.msgtype.compareTo("safe-location-request") == 0) {
+			sendSafeLocations(stream, cm.name);
+		} else {
+			System.err.println("Unknown msgtype received for " + cm);
+		}
 	}
 
 	public void run() {
-		AndroidClientService acs = AndroidClientService.getInstance();
-		SafeLocationService sls = SafeLocationService.getInstance();
-
 		try {
 			OutputStream output = socket.getOutputStream();
 			BufferedReader input = new BufferedReader(
@@ -55,19 +107,7 @@ class ConnectionWorker implements Runnable {
 					break;
 				}
 				cm = g.fromJson(msg, ClientMessage.class);
-				if (cm.msgtype.compareTo("client-location") == 0) {
-					acs.addLocation(cm.name, new Location(cm));
-					acs.list();
-				} else if (cm.msgtype.compareTo("safe-location") == 0) {
-					sls.add(new Location(cm));
-					sls.list(System.out);
-				} else if (cm.msgtype.compareTo("safe-location-preferences") == 0) {
-					acs.setPreferences(cm.name, new ClientPreferences(cm));
-				} else if (cm.msgtype.compareTo("safe-location-request") == 0) {
-					sendSafeLocations(output, cm.name);
-				} else {
-					System.err.println("Unknown msgtype received for " + cm);
-				}
+				parseClientMessage(cm, output);
 				long time = System.currentTimeMillis();
 				System.out.println("Request processed: " + time);
 			}

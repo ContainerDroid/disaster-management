@@ -25,8 +25,13 @@ public class SafeLocationService {
 	}
 
 	public void list(PrintStream stream) {
+		stream.println("SafeLocationService listing");
 		for (Location l: locations) {
 			stream.println(l);
 		}
+	}
+
+	public int getLocationCount() {
+		return locations.size();
 	}
 }
