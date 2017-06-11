@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity
         if (itemId == R.id.nav_live) {
 
         } else if (itemId == R.id.nav_replay) {
-
+            fragment = new ReplayFragment();
         } else if (itemId == R.id.nav_generate_samples) {
             fragment = new GenerateSampleFragment();
         } else if (itemId == R.id.nav_settings) {

@@ -37,4 +37,8 @@
 
     <!-- Strings related to friends fragment -->
     <string name="title_friends">Friends</string>
+
+    <!-- Strings related to replay fragment -->
+    <string name="title_replay">Replay</string>
+
 </resources>
