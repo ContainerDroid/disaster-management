@@ -119,6 +119,8 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
                     "Sample stored at " + logFile, Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

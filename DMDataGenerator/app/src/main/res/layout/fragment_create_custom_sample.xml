@@ -59,7 +59,8 @@
                 android:hint="offset"
                 android:inputType="numberDecimal"
                 android:enabled="false"
-                android:textAlignment="center" />
+                android:textAlignment="center"
+                android:id="@+id/offset"/>
 
         </GridLayout>
 

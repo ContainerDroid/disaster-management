@@ -1,6 +1,7 @@
 package com.skbuf.datagenerator;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +14,10 @@ import android.widget.TextView;
 import java.util.List;
 
 public class FileListAdapter extends BaseAdapter {
-    private List<String> items;
+    private List<Uri> items;
     private Context context;
 
-    public FileListAdapter(Context context, List<String> items) {
+    public FileListAdapter(Context context, List<Uri> items) {
         this.context = context;
         this.items = items;
     }
@@ -27,7 +28,7 @@ public class FileListAdapter extends BaseAdapter {
     }
 
     @Override
-    public String getItem(int position) {
+    public Uri getItem(int position) {
         if (position < this.items.size())
             return this.items.get(position);
         return null;
@@ -38,7 +39,7 @@ public class FileListAdapter extends BaseAdapter {
         return position;
     }
 
-    public void addItem(String sampleFile){
+    public void addItem(Uri sampleFile){
         items.add(sampleFile);
     }
 
@@ -53,7 +54,7 @@ public class FileListAdapter extends BaseAdapter {
         View newView = inflater.inflate(R.layout.list_item, null);
 
         TextView sampleName = (TextView) newView.findViewById(R.id.sample_name);
-        sampleName.setText(getItem(position));
+        sampleName.setText(getItem(position).getLastPathSegment().toString());
 
         Button sampleRemove = (Button) newView.findViewById(R.id.sample_remove);
         sampleRemove.setOnClickListener(new View.OnClickListener() {

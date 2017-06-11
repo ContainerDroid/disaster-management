@@ -170,6 +170,8 @@ public class SecondActivity extends AppCompatActivity implements LocationListene
                         filePath = SamplingData.createLogFile();
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                     Toast.makeText(getApplicationContext(), "Saved in " + filePath, Toast.LENGTH_LONG).show();
                 }

@@ -13,27 +13,35 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CreateCustomSampleFragment extends Fragment {
 
     private final String TAG = "CreateCustomSample";
-    private List<String> filesSelected = new ArrayList<String>();
 
+    private List<Uri> filesSelected = new ArrayList<Uri>();
     private final Integer FILE_SELECT_CODE = 1;
     private final Integer FILE_CREATE_CODE = 2;
 
     private Button buttonSave, buttonBrowse;
     private ListView lv;
     private FileListAdapter adapter;
+    Switch switchOffset;
+    EditText globalOffset;
 
 
     @Override
@@ -83,6 +91,19 @@ public class CreateCustomSampleFragment extends Fragment {
         adapter = new FileListAdapter(getContext(), filesSelected);
         lv = (ListView) getView().findViewById(R.id.list);
         lv.setAdapter(adapter);
+
+        switchOffset = (Switch) getView().findViewById(R.id.swith_offset);
+        globalOffset = (EditText) getView().findViewById(R.id.offset);
+        switchOffset.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+                if (checked == true) {
+                    globalOffset.setEnabled(true);
+                } else {
+                    globalOffset.setEnabled(false);
+                }
+            }
+        });
     }
 
 
@@ -92,8 +113,7 @@ public class CreateCustomSampleFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_SELECT_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                String sampleFile = data.getData().toString().replaceFirst("file:///storage/emulated/0/DMDataGenerator-Samples/", "");
-                filesSelected.add(sampleFile);
+                filesSelected.add(data.getData());
                 adapter.notifyDataSetChanged();
             }
         } else if (requestCode == FILE_CREATE_CODE) {
@@ -101,27 +121,61 @@ public class CreateCustomSampleFragment extends Fragment {
                 Uri uri = data.getData();
                 String customSampleFile = uri.toString();
 
+                createCustomSample(uri);
                 Log.d(TAG, "Created custom file: " + customSampleFile);
-                Toast.makeText(getContext(), customSampleFile, Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
-                try {
-                    ParcelFileDescriptor pfd = getActivity().getContentResolver().
-                            openFileDescriptor(uri, "w");
-                    FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
+    public void createCustomSample(Uri uri) {
+        Boolean globalOffsetEnabled = switchOffset.isChecked();
+        Integer offsetValue = 0;
+        if (globalOffsetEnabled == true) {
+            offsetValue = Integer.parseInt(globalOffset.getText().toString());
+        }
+        String line;
 
-                    fileOutputStream.write("TODO TODO TODO".getBytes());
+        // concatenate files and adjust timestamp
+        try {
+            ParcelFileDescriptor outputPfd = getActivity().getContentResolver().openFileDescriptor(uri, "w");
+            FileOutputStream fileOutputStream = new FileOutputStream(outputPfd.getFileDescriptor());
 
-                    fileOutputStream.close();
-                    pfd.close();
+            for (Uri inputUri : filesSelected) {
+                ParcelFileDescriptor inputPfd = getActivity().getContentResolver().openFileDescriptor(inputUri, "r");
+                FileInputStream fileInputStream = new FileInputStream(inputPfd.getFileDescriptor());
+                BufferedReader br = new BufferedReader(new InputStreamReader(fileInputStream));
 
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (globalOffsetEnabled == true) {
+                    // get first timestamp and write in the output file
+                    line = br.readLine();
+                    String columns[] = line.split(" ");
+                    Long startTimestamp = Long.parseLong(columns[0]);
+                    String newLine = "0 " + columns[1] + " " + columns[2] + " " + columns[3] + "\n";
+                    fileOutputStream.write(newLine.getBytes());
+
+                    while ((line = br.readLine()) != null)   {
+                        columns = line.split(" ");
+                        Long timestamp = Long.parseLong(columns[0]) - startTimestamp + offsetValue;
+                        newLine = timestamp + " " + columns[1] + " " + columns[2] + " " + columns[3] + "\n";
+                        fileOutputStream.write(newLine.getBytes());
+                    }
+                } else {
+                    while ((line = br.readLine()) != null)   {
+                        line = line + "\n";
+                        fileOutputStream.write(line.getBytes());
+                    }
                 }
 
-
+                br.close();
+                fileInputStream.close();
             }
+
+            fileOutputStream.close();
+            outputPfd.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
