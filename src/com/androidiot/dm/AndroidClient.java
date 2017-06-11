@@ -129,6 +129,10 @@ public class AndroidClient {
 		this.preferences = pref;
 	}
 
+	public Location getCurrentLocation() {
+		return trajectory.get(trajectory.size() - 1);
+	}
+
 	public String toString() {
 		String str;
 		if (preferences != null) {

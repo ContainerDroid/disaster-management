@@ -28,14 +28,22 @@ public class CriteriaScoreCalculator {
 
 	public static double[] getProximityPriorityVector(AndroidClient requester) {
 		SafeLocationService sls = SafeLocationService.getInstance();
-
 		int locationCount = sls.getLocationCount();
-		double[] priorityVector = new double[locationCount];
+		double[] distances = new double[locationCount];
+		double[][] comparisonMatrix = new double[locationCount][locationCount];
+		Location clientPosition = requester.getCurrentLocation();
 
 		for (int i = 0; i < locationCount; i++) {
-			priorityVector[i] = (double) (1.0 / locationCount);
+			distances[i] = clientPosition.getDistanceKmTo(sls.getLocation(i));
 		}
-		return priorityVector;
+		for (int i = 0; i < locationCount; i++) {
+			for (int j = 0; j < locationCount; j++) {
+				comparisonMatrix[i][j] = distances[i] / distances[j];
+				System.out.println("ComparisonMatrix[" + i + "][" + j + "] = " + comparisonMatrix[i][j]);
+			}
+		}
+		AHPHelper ahp = new AHPHelper(comparisonMatrix, locationCount);
+		return ahp.getPriorityVector();
 	}
 
 	public static double[] getFriendsPriorityVector(AndroidClient requester) {

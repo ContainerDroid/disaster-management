@@ -34,4 +34,8 @@ public class SafeLocationService {
 	public int getLocationCount() {
 		return locations.size();
 	}
+
+	public Location getLocation(int i) {
+		return locations.get(i);
+	}
 }
