@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Html;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,12 +22,12 @@ import java.util.List;
 
 public class SettingsFragment extends Fragment {
 
-    List<String> criteria = new ArrayList<>(Arrays.asList("safety",
+    List<String> criteria = new ArrayList<>(Arrays.asList(
+            "safety",
             "proximity",
             "close to friends",
             "not crowded"));
-    List<String> pairwiseComparisons = createPairwiseComparisons(criteria);
-
+    List<Pair<String, String>> pairwiseComparisons = createPairwiseComparisons(criteria);
 
     private ListView lv;
     private SettingsAdapter adapter;
@@ -53,15 +54,15 @@ public class SettingsFragment extends Fragment {
         lv.setAdapter(adapter);
     }
 
-    private List<String> createPairwiseComparisons(List<String> criteria) {
-        List<String> comparisons = new ArrayList<String>();
+    private List<Pair<String, String>> createPairwiseComparisons(List<String> criteria) {
+        List<Pair<String, String>> comparisons = new ArrayList<Pair<String, String>>();
+        Integer criteriaSize = criteria.size();
 
-        for (String c1 : criteria) {
-            for (String c2: criteria) {
-                if (c1 != c2) {
-                    String comparison = c1 + " over " + c2;
-                    comparisons.add(comparison);
-                }
+        for (Integer i = 0; i < criteriaSize; i++) {
+            for (Integer j = i + 1; j < criteriaSize; j++) {
+                String c1 = criteria.get(i);
+                String c2 = criteria.get(j);
+                comparisons.add(new Pair<String, String>(c1, c2));
             }
         }
 
