@@ -50,32 +50,15 @@ Starting from the 4 criteria described above, one can specify the importance of 
 
 When interracting with the server, user preferences and also friends names are transformed into JSON formatted messages, as explained above. In this specific case, message types \textit{safe-location-preferences} and \textit{friends} are used.
 
+Using \textit{Generate Sample Activity - Figure \ref{fig:generate}}, one can create data samples based on location updates provided by GoogleAPIs. The user is given the option of announcing that he/she found a \textit{safe spot} or to request one from its peers.
+
 \begin{wrapfigure}{R}{0.3\textwidth}
 \centering
 \includegraphics[scale=0.1]{generate}
 \caption{\label{fig:generate}Generate Sample Activity}
 \end{wrapfigure}
 
-Using \textit{Generate Sample Activity - Figure \ref{fig:generate}}, one can create data samples based on location updates provided by GoogleAPIs. The user is given the option of announcing that he/she found a \textit{safe spot} or to request one from its peers. Upon termination, a text file with the \textit{sample-timestamp-username} format is created on the external storage (/sdcard/DMDataGenerator-Samples).
-
-\lstset{
-    string=[s]{"}{"},
-    stringstyle=\color{blue},
-    comment=[l]{:},
-    commentstyle=\color{black},
-}
-
-%\begin{lstlisting}
-%{"msgtype":"delete-clients"}
-%{"msgtype":"delete-safe-locations"}
-%{"msgtype":"friends","name":"111","friends":["22"]}
-%{"msgtype":"safe-location-preferences","name":"111","criteria":["safety","proximity","closeToFriends","notCrowded"],"pairwiseComparisons":[4.0,4.0,4.0,1.0,1.0,1.0]}
-%{"msgtype":"client-location","name":"111","timestamp":998,"latitude":44.418954,"longitude":26.0436168}
-%{"msgtype":"client-location","name":"111","timestamp":1998,"latitude":44.4189502,"longitude":26.0436203}
-%{"msgtype":"safe-location-request","timestamp":43752,"name":"111"}
-%{"msgtype":"safe-location","name":"111","timestamp":7389,"latitude":44.4188103,"longitude":26.0443281}
-%\end{lstlisting}
-
+Upon termination, a text file with the \textit{sample-<timestamp>-<username>} format is created on the external storage (/sdcard/DMDataGenerator-Samples). The newly created file stores JSON formatted messages that will be later used to communicate with the server.
 
 \begin{wrapfigure}{R}{0.3\textwidth}
 \centering
@@ -83,14 +66,29 @@ Using \textit{Generate Sample Activity - Figure \ref{fig:generate}}, one can cre
 \caption{\label{fig:custom}Create Custom Sample Activity}
 \end{wrapfigure}
 
+In order to create complex scenarios without on multiple multiple clients, \textit{Create Custom Sample Activity - Figure \ref{fig:custom}} can be used to combine a series of data samples into one main file.
+
+Selected files can be added using the \textit{Browse} button, removed if necessary and their concatenation can be saved in a user specified file.
+
+Because multiple data samples are generated using only one client device, the timestamp range differs between files. To overcome this problem, one can opt to offset all messages from a specific input file to the timestamp of the start of sampling.
+
 \begin{wrapfigure}{R}{0.3\textwidth}
 \centering
 \includegraphics[scale=0.1]{replay}
 \caption{\label{fig:replay}Replay Activity}
 \end{wrapfigure}
 
+Once we have a custom file that perfectly describes a specific scenario, we can choose to replay it using the \textit{Replay Activity - Figure \ref{fig:replay}}. There are 2 floating action buttons that let the user to choose a new sample file to be uploaded or step through the messages until someone requests a \textit{safe location position}.
+
 \begin{wrapfigure}{R}{0.3\textwidth}
 \centering
 \includegraphics[scale=0.1]{replayfound}
-\caption{\label{fig:replayfround}Replay Activity with Safe place found}
+\caption{\label{fig:replayfound}Replay Activity with Safe place found}
 \end{wrapfigure}
+
+Figure \ref{replayfound} describes a scenario where 3 users defined on the map with yellow, red and blue as trajectory colors used our application.
+
+Both user \textit{yellow} and \textit{blue} mark their final positions as \textit{safe spots} while the \textit{red} user requestis one.
+
+In this specific case, \textit{red} has previously specified that he defines safety as mostly proximity thus the closer safe spot turns \textit{green} to mark the \textit{safe position} requested.
+
