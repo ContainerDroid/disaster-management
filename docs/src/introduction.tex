@@ -1,3 +1,55 @@
 % vim: set tw=78 sts=2 sw=2 ts=8 aw et ai:
 
-And there was light.
+In the circumstances of a disaster (either natural or caused by man), there is
+generally a high level of confusion among large groups of people. The
+immediate action that needs to be taken is usually finding a safe spot to
+hide. Afterwards, one can attempt to eliminate the cause of the disaster and
+rescue the people left behind.
+
+Because of the general confusion, the immediate decision to escape that is
+made by the individual may be based only on intuition, and thus not optimal.
+
+This project's goal is to create a mobile application that helps the user in an
+emergency situation by pointing to the best safe place to hide. The list of
+alternatives for shelter can either be crowdsourced from the other
+participants to the disaster, or provided by the owner of the venue themselves
+(say for example an accident happens during a concert or sports game).
+
+The application has a component which is permanently running in the background
+as a service, and keeps listening for events that might trigger an emergency
+alert.
+
+Once emergency state is triggered, the active part of the application, in the
+form of an activity, is automatically brought to the user's foreground, and
+guides them to the best known safe spot.
+
+While being a scenario that lends itself well to a mesh network approach, the
+proposed prototype follows a traditional approach with a single, centralized
+server. This is responsible for receiving messages from all mobile clients,
+either sharing their current location, or the location of a newfound shelter.
+
+The server keeps track of the positions of all clients and safe spots. On
+request, it will apply a decision-making algorithm and select the most
+appropriate safe location for the client who is asking.
+
+The client is able to customize the way safe locations are being selected by
+the server. As part of the decision-making algorithm, the user's perceived
+importance of the following criteria is taken into consideration:
+
+\begin{itemize}
+  \item Proximity to the respective exit point. If this is perceived as
+    important to the user, the server will tend to prefer guiding this user
+    towards exit points that are close to him, with a higher precedence over
+    other criteria.
+  \item Safety of the exit point. This can be rephrased as "guarantee that
+    the user can indeed exit through that point". A simple way to measure this
+    (negatively) is to count the number of people who are in the vicinity of
+    that exit spot, but cannot pass through it.
+  \item How crowded is the exit point. The metric proposed here is the speed
+    that people in the exit's vicinity are able to pass through it. A
+    congested exit point permits people to exit at a much lower rate than one
+    that is free. The difference between the metric used for crowdedness and
+    the one used for safety is the fact that crowdedness only looks at the
+    people who managed to escape, while safety looks at those who didn't.
+  \item Being close to friends.
+\end{itemize}
