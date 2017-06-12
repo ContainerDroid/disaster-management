@@ -22,6 +22,7 @@ public class Message implements Comparable {
     final static String MSG_TYPE_REQUEST = "safe-location-request";
     final static String MSG_TYPE_DELETE_CLIENTS = "delete-clients";
     final static String MSG_TYPE_DELETE_SAFE_LOCATIONS = "delete-safe-locations";
+    final static String MSG_TYPE_PREF_RESPONSE = "consistency-ratio";
 
     String msgtype;
 
@@ -37,6 +38,19 @@ public class Message implements Comparable {
     private Long timestamp;
     private Location location;
     private double latitude;
+
+
+    // messageType = consistency-ratio
+    private Double value;
+
+
+    public Double getValue() {
+        return value;
+    }
+
+    public void setValue(Double value) {
+        this.value = value;
+    }
 
     public double getLatitude() {
         return latitude;
@@ -185,6 +199,8 @@ public class Message implements Comparable {
             } else if (msg.msgtype.equals(Message.MSG_TYPE_REQUEST)) {
                 result.add("timestamp", new JsonPrimitive(msg.getTimestamp()));
                 result.add("name", new JsonPrimitive(msg.getUsername()));
+            } else if (msg.msgtype.equals(Message.MSG_TYPE_PREF_RESPONSE)) {
+                result.add("value", new JsonPrimitive(msg.getValue()));
             }
 
             return result;

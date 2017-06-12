@@ -75,7 +75,7 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
     FloatingActionButton uploadFile, nextButton;
 
     // drawing on the map
-    List<Integer> colors = Arrays.asList(Color.BLUE, Color.GREEN, Color.YELLOW, Color.RED);
+    List<Integer> colors = Arrays.asList(Color.BLUE, Color.YELLOW, Color.RED, Color.GREEN);
     Integer currentColor = 0;
 
     HashMap<String, List<LatLng>> usersLocations = new HashMap<String, List<LatLng>>();
@@ -155,6 +155,8 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                 Uri sampleSelectedURI = data.getData();
                 Log.d(TAG, "Selected file: " + sampleSelectedURI.getPath());
 
+                currentColor = 0;
+
                 // connect to server
                 SocketThread socketThread = new SocketThread();
                 socketThread.start();
@@ -181,7 +183,6 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                 OutgoingThread outThread = new OutgoingThread(brSocket, line);
                 outThread.start();
 
-                Log.d(TAG, line);
                 message = gson.fromJson(line, Message.class);
 
                 if (message.msgtype.equals(Message.MSG_TYPE_LOCATION) == false){
@@ -238,7 +239,6 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                 }
 
                 while ((line = br.readLine()) != null) {
-                    Log.d(TAG, line);
                     message = gson.fromJson(line, Message.class);
 
                     // send line to server

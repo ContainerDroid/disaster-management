@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_favorite"
+        android:id="@+id/action_check"
         android:icon="@drawable/ic_check_black_24dp"
         android:title="Verify"
         app:showAsAction="always"/>
