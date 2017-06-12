@@ -25,8 +25,8 @@ public class SettingsFragment extends Fragment {
     List<String> criteria = new ArrayList<>(Arrays.asList(
             "safety",
             "proximity",
-            "close to friends",
-            "not crowded"));
+            "closeToFriends",
+            "notCrowded"));
     List<Pair<String, String>> pairwiseComparisons = createPairwiseComparisons(criteria);
 
     private ListView lv;

@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -34,12 +35,16 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.gson.Gson;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -79,6 +84,11 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
     BufferedReader br;
     Polyline line;
     Boolean simulationStarted = false;
+
+    Handler updateConversationHandler;
+
+    Socket socketGlobal;
+    BufferedOutputStream brSocket;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -132,6 +142,9 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                 ReplayStep();
             }
         });
+
+        updateConversationHandler = new Handler();
+
     }
 
     @Override
@@ -141,6 +154,10 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
             if (resultCode == Activity.RESULT_OK) {
                 Uri sampleSelectedURI = data.getData();
                 Log.d(TAG, "Selected file: " + sampleSelectedURI.getPath());
+
+                // connect to server
+                SocketThread socketThread = new SocketThread();
+                socketThread.start();
 
                 // should start to display
                 replay(sampleSelectedURI);
@@ -160,7 +177,9 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
             br = new BufferedReader(new InputStreamReader(fileInputStream));
 
             while ((line = br.readLine()) != null) {
-                // TODO: send line to server
+                // send line to server
+                OutgoingThread outThread = new OutgoingThread(brSocket, line);
+                outThread.start();
 
                 Log.d(TAG, line);
                 message = gson.fromJson(line, Message.class);
@@ -202,7 +221,7 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
         thread.run();
     }
 
-    public class StepThread implements Runnable {
+    public class StepThread extends Thread {
 
         @Override
         public void run() {
@@ -222,7 +241,9 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                     Log.d(TAG, line);
                     message = gson.fromJson(line, Message.class);
 
-                    // TODO: send line to server
+                    // send line to server
+                    OutgoingThread outThread = new OutgoingThread(brSocket, line);
+                    outThread.start();
 
                     if (message.msgtype.equals(Message.MSG_TYPE_LOCATION)) {
                         insertNewLocation(message);
@@ -238,6 +259,8 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                     br = null;
                     simulationStarted = false;
                     Toast.makeText(getActivity(), "Simulation finished!", Toast.LENGTH_SHORT).show();
+                    brSocket.close();
+                    socketGlobal.close();
                 } else {
                     redrawLines();
                     Toast.makeText(getActivity(), username + " made a request for location", Toast.LENGTH_SHORT).show();
@@ -252,7 +275,6 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                     e1.printStackTrace();
                 }
             }
-
         }
     }
 
@@ -409,5 +431,96 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
         mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
         mLocationRequest.setSmallestDisplacement(SMALLEST_DISPLACEMENT);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+
+    class SocketThread extends Thread {
+        Socket socket = null;
+
+        @Override
+        public void run() {
+
+            try {
+                this.socket = new Socket(GlobalData.getServerAddress(), GlobalData.getServerPort());
+                socketGlobal = this.socket;
+                brSocket = new BufferedOutputStream(this.socket.getOutputStream());
+
+                if (socket != null) {
+                    IncommingThread incommingTh = new IncommingThread(socket);
+                    incommingTh.start();
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class IncommingThread extends Thread {
+
+        private Socket socket;
+        private BufferedReader input;
+
+        public IncommingThread(Socket socket) {
+
+            try {
+                this.socket = socket;
+                this.input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void run() {
+            while (!Thread.currentThread().isInterrupted()) {
+
+                try {
+                    String read = input.readLine();
+                    updateConversationHandler.post(new updateUIThread(read));
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    class updateUIThread extends Thread {
+        private String msg;
+
+        public updateUIThread(String str) {
+            this.msg = str;
+        }
+
+        @Override
+        public void run() {
+            Log.d(TAG, "De la server: " + msg);
+        }
+    }
+
+    class OutgoingThread extends Thread {
+        BufferedOutputStream brOut;
+        String line;
+
+
+        public OutgoingThread(BufferedOutputStream out, String line) {
+            this.brOut = out;
+            this.line = line;
+        }
+
+
+        @Override
+        public void run() {
+
+            try {
+                brOut.write(line.getBytes());
+                brOut.write('\n');
+                brOut.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 }
