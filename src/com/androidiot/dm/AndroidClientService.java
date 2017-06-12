@@ -21,13 +21,14 @@ public class AndroidClientService {
 		return LazyHolder.INSTANCE;
 	}
 
-	public void addLocation(String name, Location l) {
+	public void addLocation(String name, String strTimestamp, Location l) {
+		double timestamp = Double.parseDouble(strTimestamp);
 		AndroidClient ac = clients.get(name);
 		if (ac == null) {
 			ac = new AndroidClient();
 			clients.put(name, ac);
 		}
-		ac.trajectory.add(l);
+		ac.addLocation(timestamp, l);
 	}
 
 	public void setPreferences(String name, ClientPreferences pref) {
@@ -53,5 +54,9 @@ public class AndroidClientService {
 
 	public AndroidClient getClient(String name) {
 		return clients.get(name);
+	}
+
+	public void deleteClients() {
+		clients = new HashMap<String, AndroidClient>();
 	}
 }

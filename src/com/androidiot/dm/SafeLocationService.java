@@ -38,4 +38,8 @@ public class SafeLocationService {
 	public Location getLocation(int i) {
 		return locations.get(i);
 	}
+
+	public void deleteLocations() {
+		locations = new ArrayList<Location>();
+	}
 }

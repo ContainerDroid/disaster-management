@@ -2,8 +2,9 @@ package com.androidiot.dm;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 
-class ClientPreferences {
+class ClientPreferences implements java.io.Serializable {
 	/* AHP weights */
 	String[]   criteriaLabels;
 	double[][] criteriaComparisonMatrix;
@@ -16,6 +17,7 @@ class ClientPreferences {
 		criteriaLabels = new String[0];
 		criteriaWeights = new double[0];
 		criteriaComparisonMatrix = new double[0][0];
+		criteriaCount = 0;
 	}
 
 	/* Copy constructor */
@@ -97,6 +99,9 @@ class ClientPreferences {
 
 	@Override
 	public String toString() {
+		if (criteriaCount == 0) {
+			System.out.println("ClientPreferences Not initialized");
+		}
 		String str = "";
 		for (int i = 0; i < criteriaCount; i++) {
 			str += String.format("%15s", criteriaLabels[i]);
@@ -112,13 +117,17 @@ class ClientPreferences {
 	}
 }
 
-public class AndroidClient {
+public class AndroidClient implements java.io.Serializable {
 	ClientPreferences preferences;
 	ArrayList<Location> trajectory;
+	ArrayList<Double>   timestamps;
 	String[] friends;
+	boolean safe;
 
 	public AndroidClient() {
 		this.trajectory = new ArrayList<Location>();
+		this.timestamps = new ArrayList<Double>();
+		safe = false;
 	}
 
 	public void setFriends(String[] friends) {
@@ -127,6 +136,11 @@ public class AndroidClient {
 
 	public void setPreferences(ClientPreferences pref) {
 		this.preferences = pref;
+	}
+
+	public Location getLocationAtTime(double time) {
+		int pos = Arrays.binarySearch(timestamps.toArray(), time);
+		return trajectory.get(pos);
 	}
 
 	public Location getCurrentLocation() {
@@ -150,10 +164,38 @@ public class AndroidClient {
 			str = "Friends are not initialized\n";
 		}
 		str += "Trajectory:\n";
-		for (Location l: trajectory) {
-			str += l.toString();
+		for (int i = 0; i < trajectory.size(); i++) {
+			str += trajectory.get(i) +
+				" at time " + timestamps.get(i);
 		}
 		return str;
+	}
+
+	public void addLocation(double timestamp, Location l) {
+		trajectory.add(l);
+		timestamps.add(timestamp);
+	}
+
+	public boolean isSafe() {
+		return safe;
+	}
+
+	public void makeSafe() {
+		safe = true;
+	}
+
+	public double getTimeSpentNearby(Location l, double eps) {
+		int pos = trajectory.size() - 1;
+
+		while (trajectory.get(pos).isInVicinityOf(l, eps) == false) {
+			pos--;
+		}
+		int endPos = pos;
+		while (trajectory.get(pos).isInVicinityOf(l, eps) == false) {
+			pos--;
+		}
+		int startPos = pos;
+		return timestamps.get(endPos) - timestamps.get(startPos);
 	}
 }
 

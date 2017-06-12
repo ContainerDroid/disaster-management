@@ -40,14 +40,8 @@ class ConnectionWorker implements Runnable {
 			System.err.println("Cannot find client " + clientName);
 			return;
 		}
-		stream.println("Your preference consistency ratio is:");
-		stream.println(requester.preferences.getConsistencyRatio());
 
 		ArrayList<AndroidClient> people = acs.getClients();
-		stream.println("Size: " + people.size());
-		acs.list(stream);
-		sls.list(stream);
-
 
 		double[] proximityPriorityVector =
 			CriteriaScoreCalculator.getProximityPriorityVector(requester);
@@ -78,18 +72,23 @@ class ConnectionWorker implements Runnable {
 		PrintStream stream = new PrintStream(output, true);
 
 		if (cm.msgtype.compareTo("client-location") == 0) {
-			acs.addLocation(cm.name, new Location(cm));
-			acs.list(stream);
+			acs.addLocation(cm.name, cm.timestamp, new Location(cm));
 		} else if (cm.msgtype.compareTo("safe-location") == 0) {
 			sls.add(new Location(cm));
-			sls.list(System.out);
 		} else if (cm.msgtype.compareTo("safe-location-preferences") == 0) {
 			acs.setPreferences(cm.name, new ClientPreferences(cm));
+			stream.println("Your preference consistency ratio is:");
+			stream.println(acs.getClient(cm.name).preferences.getConsistencyRatio());
 		} else if (cm.msgtype.compareTo("safe-location-request") == 0) {
 			sendSafeLocations(stream, cm.name);
+		} else if (cm.msgtype.compareTo("delete-clients") == 0) {
+			acs.deleteClients();
+		} else if (cm.msgtype.compareTo("delete-safe-locations") == 0) {
+			sls.deleteLocations();
 		} else {
 			System.err.println("Unknown msgtype received for " + cm);
 		}
+		System.out.println("Request processed: " + cm.msgtype);
 	}
 
 	public void run() {
@@ -108,8 +107,6 @@ class ConnectionWorker implements Runnable {
 				}
 				cm = g.fromJson(msg, ClientMessage.class);
 				parseClientMessage(cm, output);
-				long time = System.currentTimeMillis();
-				System.out.println("Request processed: " + time);
 			}
 		} catch (IOException e) {
 			//report exception somewhere.

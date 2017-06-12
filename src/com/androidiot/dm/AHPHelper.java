@@ -4,7 +4,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealVector;
 
-public class AHPHelper {
+public class AHPHelper implements java.io.Serializable {
 
 	final static double randomConsistencyIndex[] =
 		{0.0, 0.0, 0.58, 0.9, 1.12, 1.24, 1.32, 1.41, 1.45, 1.49};

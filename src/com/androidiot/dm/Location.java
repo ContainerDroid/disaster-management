@@ -2,7 +2,7 @@ package com.androidiot.dm;
 
 import java.lang.Math;
 
-public class Location {
+public class Location implements java.io.Serializable {
 	double latitude;
 	double longitude;
 
@@ -15,6 +15,10 @@ public class Location {
 		double x = (this.latitude  - other.latitude);
 		double y = (this.longitude - other.longitude) * Math.cos(this.longitude);
 		return degreeLength * Math.sqrt(x*x + y*y);
+	}
+
+	public boolean isInVicinityOf(Location other, double eps) {
+		return getDistanceKmTo(other) < eps;
 	}
 
 	public Location(ClientMessage cm) {

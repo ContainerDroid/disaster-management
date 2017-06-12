@@ -4,14 +4,22 @@ public class CriteriaScoreCalculator {
 
 	public static double[] getCrowdednessPriorityVector(AndroidClient requester) {
 		SafeLocationService sls = SafeLocationService.getInstance();
+		AndroidClientService acs = AndroidClientService.getInstance();
+		SparkService ss = SparkService.getInstance();
 
 		int locationCount = sls.getLocationCount();
+		double[][] comparisonMatrix = new double[locationCount][locationCount];
 		double[] priorityVector = new double[locationCount];
+		double[] scores = ss.getCrowdednessScores();
 
 		for (int i = 0; i < locationCount; i++) {
-			priorityVector[i] = (double) (1.0 / locationCount);
+			for (int j = 0; j < locationCount; j++) {
+				comparisonMatrix[i][j] = scores[i] / scores[j];
+				System.out.println("ComparisonMatrix[" + i + "][" + j + "] = " + comparisonMatrix[i][j]);
+			}
 		}
-		return priorityVector;
+		AHPHelper ahp = new AHPHelper(comparisonMatrix, locationCount);
+		return ahp.getPriorityVector();
 	}
 
 	public static double[] getSafetyPriorityVector(AndroidClient requester) {
