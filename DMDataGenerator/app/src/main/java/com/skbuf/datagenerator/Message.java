@@ -20,6 +20,8 @@ public class Message implements Comparable {
     final static String MSG_TYPE_LOCATION = "client-location";
     final static String MSG_TYPE_SAFE = "safe-location";
     final static String MSG_TYPE_REQUEST = "safe-location-request";
+    final static String MSG_TYPE_DELETE_CLIENTS = "delete-clients";
+    final static String MSG_TYPE_DELETE_SAFE_LOCATIONS = "delete-safe-locations";
 
     String msgtype;
 
@@ -54,9 +56,14 @@ public class Message implements Comparable {
 
     private double longitude;
 
-    public Message(String type, Long timestamp) {
+    public Message(String type) {
         this.msgtype = type;
-        this.timestamp = timestamp;
+    }
+
+    public Message(String type, Long timestamp, String name) {
+        this.msgtype = type;
+        this.timestamp =  timestamp;
+        this.name = name;
     }
 
     public Message(String type, String username, List<String> friends) {
@@ -177,6 +184,7 @@ public class Message implements Comparable {
                 result.add("longitude", new JsonPrimitive(msg.getLongitude()));
             } else if (msg.msgtype.equals(Message.MSG_TYPE_REQUEST)) {
                 result.add("timestamp", new JsonPrimitive(msg.getTimestamp()));
+                result.add("name", new JsonPrimitive(msg.getUsername()));
             }
 
             return result;

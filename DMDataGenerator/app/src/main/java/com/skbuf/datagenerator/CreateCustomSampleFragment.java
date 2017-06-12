@@ -139,6 +139,8 @@ public class CreateCustomSampleFragment extends Fragment {
         try {
             ParcelFileDescriptor outputPfd = getActivity().getContentResolver().openFileDescriptor(uri, "w");
             FileOutputStream fileOutputStream = new FileOutputStream(outputPfd.getFileDescriptor());
+            Boolean deleteClientsFound = false;
+            Boolean deleteSafelocationsFound = false;
 
             for (Uri inputUri : filesSelected) {
                 ParcelFileDescriptor inputPfd = getActivity().getContentResolver().openFileDescriptor(inputUri, "r");
@@ -151,16 +153,32 @@ public class CreateCustomSampleFragment extends Fragment {
                 // find the first location message
                 while ((line = br.readLine()) != null) {
                     firstMessage = gson.fromJson(line, Message.class);
-                    if (firstMessage.msgtype.equals(Message.MSG_TYPE_FRIENDS) ||
-                            firstMessage.msgtype.equals(Message.MSG_TYPE_PREF)) {
+                    if (firstMessage.msgtype.equals(Message.MSG_TYPE_LOCATION) == false) {
+                        if (firstMessage.msgtype.equals(Message.MSG_TYPE_DELETE_CLIENTS)) {
+
+                            if (deleteClientsFound == false)
+                                deleteClientsFound = true;
+                            else
+                                continue;
+                        }
+
+                        if (firstMessage.msgtype.equals(Message.MSG_TYPE_DELETE_SAFE_LOCATIONS)) {
+
+                            if (deleteSafelocationsFound == false)
+                                deleteSafelocationsFound = true;
+                            else
+                                continue;
+                        }
+
                         fileOutputStream.write(line.getBytes());
                         fileOutputStream.write('\n');
+
                     } else {
                         fileOffset = firstMessage.getTimestamp() - offsetValue;
                         break;
                     }
-                }
 
+                }
 
                 while ((line = br.readLine()) != null) {
                     message = gson.fromJson(line, Message.class);

@@ -118,6 +118,13 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
                     openSampleFile();
 
                     try {
+                        // write delete messages
+                        Message deleteClients = new Message(Message.MSG_TYPE_DELETE_CLIENTS);
+                        sampleFileWriter.write(deleteClients.toString() + "\n");
+
+                        Message deleteSafeLocations = new Message(Message.MSG_TYPE_DELETE_SAFE_LOCATIONS);
+                        sampleFileWriter.write(deleteSafeLocations.toString() + "\n");
+
                         // write message of type "friends"
                         Message friendMessage = new Message(Message.MSG_TYPE_FRIENDS,
                                 GlobalData.getClientName(),
@@ -174,7 +181,8 @@ public class GenerateSampleFragment extends Fragment implements GoogleApiClient.
                 try {
                     // write msg of type safe-location-request
                     Message requestMessage = new Message(Message.MSG_TYPE_REQUEST,
-                            System.currentTimeMillis());
+                            System.currentTimeMillis(),
+                            GlobalData.getClientName());
                     sampleFileWriter.write(requestMessage.toString() + "\n");
 
                 } catch (IOException e) {

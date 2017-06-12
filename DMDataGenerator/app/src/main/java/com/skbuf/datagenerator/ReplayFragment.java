@@ -509,11 +509,11 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
             this.line = line;
         }
 
-
         @Override
         public void run() {
 
             try {
+                Log.d(TAG, line);
                 brOut.write(line.getBytes());
                 brOut.write('\n');
                 brOut.flush();
