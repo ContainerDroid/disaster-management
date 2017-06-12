@@ -195,10 +195,11 @@ public class AndroidClient implements java.io.Serializable {
 			pos--;
 		}
 		int endPos = pos;
-		while (trajectory.get(pos).isInVicinityOf(l, eps) == false) {
+		while (trajectory.get(pos).isInVicinityOf(l, eps) == true) {
 			pos--;
 		}
 		int startPos = pos;
+		System.out.println("getTimeSpentNearby: " + startPos + ", " + endPos);
 		return timestamps.get(endPos) - timestamps.get(startPos);
 	}
 }

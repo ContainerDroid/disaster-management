@@ -32,7 +32,6 @@ public class SparkService {
 		int locationCount = sls.getLocationCount();
 		double[] scores = new double[locationCount];
 		/* XXX: eps */
-		final double epsTime = 100;
 		final double epsLocation = 100;
 
 		JavaRDD<AndroidClient> safeClients = sc.parallelize(people).filter(
@@ -43,7 +42,7 @@ public class SparkService {
 			JavaRDD<AndroidClient> safeClientsNearby = safeClients.filter(
 					client -> {return client.getCurrentLocation().isInVicinityOf(l, epsLocation);});
 			Double timesSpentNearby =
-				safeClientsNearby.map(client -> client.getTimeSpentNearby(l, epsTime))
+				safeClientsNearby.map(client -> client.getTimeSpentNearby(l, epsLocation))
 				.fold(0.0, ((accum, time) -> (accum + time)));
 			Integer safeClientsCount = safeClientsNearby.map(client -> 1)
 				.fold(0, ((accum, n) -> (accum + n)));
