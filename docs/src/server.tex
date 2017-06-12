@@ -55,7 +55,25 @@ to send a response:
 \end{itemize}
 
 The Multiple-Criteria Decision Analysis (MCDA) algorithm used is Analytic
-Hierarchy Process (AHP).
+Hierarchy Process (AHP) \cite{ahp}. The 4 criteria are structured on Level 1,
+while the n Safe Location alternatives are positioned on Level 2 of the
+hierarchy.
+
+In the first stage of the algorithm, a priority vector (containing criteria
+weights) is calculated based on the client's preferences received as input.
+
+In the second stage, for all n alternative Safe Locations, 4 priority vectors
+are calculated, one for each criterion (safety, proximity, crowdedness and
+closeness to friends). These hold the actual scores of the Safe Locations
+computed by the server from the perspective of that specific criterion.
+
+The final priority vector is calculated by weighing the individual scores
+obtained by the Safe Locations with the user's specific preferences with each
+criterion.
+
+For some criteria (for example crowdedness), computation is performed on the
+Apache Spark cluster. The list of clients is converted to an RDD, and at the
+end of the computation a score for the Crowded criterion is output.
 
 \begin{figure}
 \centering
