@@ -75,7 +75,7 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
     FloatingActionButton uploadFile, nextButton;
 
     // drawing on the map
-    List<Integer> colors = Arrays.asList(Color.BLUE, Color.YELLOW, Color.RED, Color.GREEN);
+    List<Integer> colors = Arrays.asList(Color.YELLOW, Color.YELLOW, Color.RED, Color.BLUE);
     Integer currentColor = 0;
 
     HashMap<String, List<LatLng>> usersLocations = new HashMap<String, List<LatLng>>();
@@ -189,7 +189,8 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                     String user = message.getUsername();
                     if (usersLocations.containsKey(user) == false) {
                         usersLocations.put(user, new ArrayList<LatLng>());
-                        usersColor.put(user, colors.get(currentColor++));
+                        usersColor.put(user, colors.get(currentColor));
+                        currentColor++;
                     }
                 } else if (message.msgtype.equals(Message.MSG_TYPE_LOCATION)){
                     insertNewLocation(message);
@@ -250,6 +251,7 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
                     } else if (message.msgtype.equals(Message.MSG_TYPE_REQUEST)){
                         username = message.getUsername();
                         replayStopped = true;
+                        Log.d(TAG, "------replayStopped----");
                         break;
                     }
                 }
@@ -280,6 +282,8 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
 
     private void redrawLines() {
 
+        Log.d(TAG, "redrawLines");
+
         mapView.getMap().clear();
 
         for (String user : usersLocations.keySet()) {
@@ -295,6 +299,8 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
     }
 
     private void redrawLine(List<LatLng> locations, Integer color, LatLng lastLocation, String user){
+
+        Log.d(TAG, "redrawLine for user " + user);
 
         PolylineOptions options = new PolylineOptions().width(10).color(color).geodesic(true);
         for (int i = 0; i < locations.size(); i++) {
@@ -484,7 +490,7 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Toast.makeText(getActivity(), "Something happened! Restart simulation!", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "O eroare!!! nasol");
                     break;
                 }
             }
@@ -501,13 +507,20 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
         @Override
         public void run() {
             Log.d(TAG, "De la server: " + msg);
+            Gson gson = new Gson();
+            Message message = gson.fromJson(msg, Message.class);
+            addMarker(new LatLng(message.getLatitude(), message.getLongitude()),
+                    "S",
+                    BitmapDescriptorFactory.HUE_GREEN);
+
+
         }
     }
 
+    Integer LOCK = 1;
     class OutgoingThread extends Thread {
         BufferedOutputStream brOut;
         String line;
-
 
         public OutgoingThread(BufferedOutputStream out, String line) {
             this.brOut = out;
@@ -517,15 +530,16 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
         @Override
         public void run() {
 
-            try {
-                Log.d(TAG, line);
-                brOut.write(line.getBytes());
-                brOut.write('\n');
-                brOut.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
+            synchronized (LOCK) {
+                try {
+                    Log.d(TAG, line);
+                    String line2 = line + "\n";
+                    brOut.write(line2.getBytes());
+                    brOut.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-
         }
     }
 }
