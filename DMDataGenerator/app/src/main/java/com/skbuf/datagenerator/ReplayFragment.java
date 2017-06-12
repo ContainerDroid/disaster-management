@@ -477,10 +477,15 @@ public class ReplayFragment extends Fragment implements GoogleApiClient.Connecti
 
                 try {
                     String read = input.readLine();
+                    if (read == null) {
+                        break;
+                    }
                     updateConversationHandler.post(new updateUIThread(read));
 
                 } catch (IOException e) {
                     e.printStackTrace();
+                    Toast.makeText(getActivity(), "Something happened! Restart simulation!", Toast.LENGTH_SHORT).show();
+                    break;
                 }
             }
         }
