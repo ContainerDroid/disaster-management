@@ -144,6 +144,10 @@ public class AndroidClient implements java.io.Serializable {
 	}
 
 	public Location getCurrentLocation() {
+		if (trajectory.size() == 0) {
+			System.err.println("Cannot get current location if trajectory is empty");
+			return null;
+		}
 		return trajectory.get(trajectory.size() - 1);
 	}
 

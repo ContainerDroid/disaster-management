@@ -40,8 +40,13 @@ class ConnectionWorker implements Runnable {
 			System.err.println("Cannot find client " + clientName);
 			return;
 		}
+		if (locationCount == 0) {
+			System.err.println("No safe locations, cannot compute priorities");
+			return;
+		}
 
 		ArrayList<AndroidClient> people = acs.getClients();
+		int choice = 0;
 
 		double[] proximityPriorityVector =
 			CriteriaScoreCalculator.getProximityPriorityVector(requester);
@@ -62,8 +67,27 @@ class ConnectionWorker implements Runnable {
 				requester.preferences.getCriteriaWeightByName("safety");
 			choices[i] += friendsPriorityVector[i] *
 				requester.preferences.getCriteriaWeightByName("closeToFriends");
-			stream.println("Location " + i + ": " + choices[i]);
+			if (choices[choice] < choices[i]) {
+				choice = i;
+			}
 		}
+		ClientMessage cm = new ClientMessage();
+		cm.msgtype   = "safe-location-response";
+		cm.latitude  = Double.toString(sls.getLocation(choice).latitude);
+		cm.longitude = Double.toString(sls.getLocation(choice).longitude);
+		cm.score     = Double.toString(choices[choice]);
+		String json  = cm.toString();
+		System.out.println(json);
+		stream.println(json);
+	}
+
+	private void sendConsistencyRatio(PrintStream stream, double value) {
+		ClientMessage response = new ClientMessage();
+		response.msgtype = "consistency-ratio";
+		response.consistencyRatio = Double.toString(value);
+		String json = response.toString();
+		System.out.println(json);
+		stream.println(json);
 	}
 
 	private void parseClientMessage(ClientMessage cm, OutputStream output) {
@@ -77,8 +101,7 @@ class ConnectionWorker implements Runnable {
 			sls.add(new Location(cm));
 		} else if (cm.msgtype.compareTo("safe-location-preferences") == 0) {
 			acs.setPreferences(cm.name, new ClientPreferences(cm));
-			stream.println("Your preference consistency ratio is:");
-			stream.println(acs.getClient(cm.name).preferences.getConsistencyRatio());
+			sendConsistencyRatio(stream, acs.getClient(cm.name).preferences.getConsistencyRatio());
 		} else if (cm.msgtype.compareTo("safe-location-request") == 0) {
 			sendSafeLocations(stream, cm.name);
 		} else if (cm.msgtype.compareTo("delete-clients") == 0) {
@@ -88,25 +111,31 @@ class ConnectionWorker implements Runnable {
 		} else {
 			System.err.println("Unknown msgtype received for " + cm);
 		}
-		System.out.println("Request processed: " + cm.msgtype);
+		System.out.println("Request processed: " + cm.msgtype + " at time " + cm.timestamp);
 	}
 
 	public void run() {
+		String msg = "";
 		try {
 			OutputStream output = socket.getOutputStream();
 			BufferedReader input = new BufferedReader(
 				new InputStreamReader(socket.getInputStream()));
 
 			ClientMessage cm;
-			String msg;
 
 			while ((msg = input.readLine()) != null) {
 				if (isStopped) {
 					input.close();
+					output.close();
 					break;
 				}
-				cm = g.fromJson(msg, ClientMessage.class);
-				parseClientMessage(cm, output);
+				System.out.println("\"" + msg + "\"");
+				try {
+					cm = g.fromJson(msg.trim(), ClientMessage.class);
+					parseClientMessage(cm, output);
+				} catch (com.google.gson.JsonSyntaxException e) {
+					System.err.println("Malformed json at " + msg);
+				}
 			}
 		} catch (IOException e) {
 			//report exception somewhere.

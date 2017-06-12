@@ -30,24 +30,28 @@ public class AHPHelper implements java.io.Serializable {
 	public AHPHelper(double[][] comparisonMatrix, int count) {
 		int evIdx = 0;
 
-		this.comparisonMatrix = new
-			Array2DRowRealMatrix(comparisonMatrix);
-		EigenDecomposition evd = new
-			EigenDecomposition(this.comparisonMatrix);
-		this.count = count;
+		try {
+			this.comparisonMatrix = new
+				Array2DRowRealMatrix(comparisonMatrix);
+			EigenDecomposition evd = new
+				EigenDecomposition(this.comparisonMatrix);
+			this.count = count;
 
-		System.out.println("Eigenvalues: ");
-		for (int i = 0; i < evd.getRealEigenvalues().length; i++) {
-			System.out.println(evd.getRealEigenvalues()[i]);
-			if (evd.getRealEigenvalue(i) > evd.getRealEigenvalue(evIdx)) {
-				evIdx = i;
+			System.out.println("Eigenvalues: ");
+			for (int i = 0; i < evd.getRealEigenvalues().length; i++) {
+				System.out.println(evd.getRealEigenvalues()[i]);
+				if (evd.getRealEigenvalue(i) > evd.getRealEigenvalue(evIdx)) {
+					evIdx = i;
+				}
 			}
+			largestEigenvector = evd.getEigenvector(evIdx);
+			largestEigenvalue  = evd.getRealEigenvalue(evIdx);
+			System.out.println("evIdx=" + evIdx);
+			System.out.println("EigenValue=" + evd.getRealEigenvalue(evIdx));
+			weights = normalizeVector(largestEigenvector);
+		} catch (org.apache.commons.math3.exception.MaxCountExceededException e) {
+			System.err.println("Convergence failed for eigenvector decomposition");
 		}
-		largestEigenvector = evd.getEigenvector(evIdx);
-		largestEigenvalue  = evd.getRealEigenvalue(evIdx);
-		System.out.println("evIdx=" + evIdx);
-		System.out.println("EigenValue=" + evd.getRealEigenvalue(evIdx));
-		weights = normalizeVector(largestEigenvector);
 	}
 
 	public double getConsistencyIndex() {

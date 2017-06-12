@@ -9,15 +9,32 @@ public class CriteriaScoreCalculator {
 
 		int locationCount = sls.getLocationCount();
 		double[][] comparisonMatrix = new double[locationCount][locationCount];
-		double[] priorityVector = new double[locationCount];
 		double[] scores = ss.getCrowdednessScores();
 
 		for (int i = 0; i < locationCount; i++) {
 			for (int j = 0; j < locationCount; j++) {
-				comparisonMatrix[i][j] = scores[i] / scores[j];
+				if (scores[j] == 0) {
+					comparisonMatrix[i][j] = 0;
+				} else {
+					comparisonMatrix[i][j] = scores[i] / scores[j];
+				}
 				System.out.println("ComparisonMatrix[" + i + "][" + j + "] = " + comparisonMatrix[i][j]);
 			}
 		}
+		double sum = 0;
+		for (int i = 0; i < locationCount; i++) {
+			sum += scores[i];
+		}
+		System.out.println("Score sum is " + sum);
+		if (sum == 0) {
+			System.err.println("No safe location. Reverting to default priority vector");
+			double[] priorityVector = new double[locationCount];
+			for (int i = 0; i < locationCount; i++) {
+				priorityVector[i] = (double) (1.0 / locationCount);
+			}
+			return priorityVector;
+		}
+
 		AHPHelper ahp = new AHPHelper(comparisonMatrix, locationCount);
 		return ahp.getPriorityVector();
 	}
@@ -40,6 +57,15 @@ public class CriteriaScoreCalculator {
 		double[] distances = new double[locationCount];
 		double[][] comparisonMatrix = new double[locationCount][locationCount];
 		Location clientPosition = requester.getCurrentLocation();
+
+		if (clientPosition == null) {
+			System.err.println("Unknown position for client, cannot get proximity score");
+			double[] priorityVector = new double[locationCount];
+			for (int i = 0; i < locationCount; i++) {
+				priorityVector[i] = (double) (1.0 / locationCount);
+			}
+			return priorityVector;
+		}
 
 		for (int i = 0; i < locationCount; i++) {
 			distances[i] = clientPosition.getDistanceKmTo(sls.getLocation(i));
