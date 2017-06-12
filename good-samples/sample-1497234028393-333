@@ -1,0 +1,8 @@
+{"msgtype":"delete-clients"}
+{"msgtype":"delete-safe-locations"}
+{"msgtype":"friends","name":"333","friends":["111"]}
+{"msgtype":"safe-location-preferences","name":"333","criteria":["safety","proximity","closeToFriends","notCrowded"],"pairwiseComparisons":[4.0,4.0,4.0,1.0,1.0,1.0]}
+{"msgtype":"client-location","name":"333","timestamp":1497234028434,"latitude":44.4186888,"longitude":26.0443809}
+{"msgtype":"client-location","name":"333","timestamp":1497234031259,"latitude":44.4188183,"longitude":26.0443466}
+{"msgtype":"client-location","name":"333","timestamp":1497234032277,"latitude":44.4188103,"longitude":26.0443281}
+{"msgtype":"safe-location","name":"333","timestamp":1497234035823,"latitude":44.4188103,"longitude":26.0443281}
