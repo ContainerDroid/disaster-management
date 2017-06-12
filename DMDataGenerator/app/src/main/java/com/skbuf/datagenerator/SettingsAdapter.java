@@ -75,9 +75,9 @@ public class SettingsAdapter extends BaseAdapter {
             imageView.setImageResource(R.drawable.green_circle);
         } else  if ("proximity".equals(criteria)) {
             imageView.setImageResource(R.drawable.blue_circle);
-        } else  if ("close to friends".equals(criteria)) {
+        } else  if ("closeToFriends".equals(criteria)) {
             imageView.setImageResource(R.drawable.yellow_circle);
-        } else  if ("not crowded".equals(criteria)) {
+        } else  if ("notCrowded".equals(criteria)) {
             imageView.setImageResource(R.drawable.red_circle);
         }
     }
